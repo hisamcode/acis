@@ -2,13 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ template "title" . }}</title>
-  <script src="/static/js/htmx.min.js"></script>
-  <link rel="stylesheet" href="/static/css/main.css">
-</head>
+{{template "head" .}}
 
 <body>
 
@@ -17,9 +11,9 @@
   </div>
 
   <div class="flex justify-center">
-    <div class="container w-1/2">
-      <div class="flex justify-center">
-        <ul class="menu bg-base-200 lg:menu-horizontal rounded-box">
+    <div class="container lg:w-1/2">
+      <div class="flex justify-center sticky top-2 z-10">
+        <ul class="menu bg-base-200 sm:menu-horizontal  menu-vertical rounded-box">
           <li>
             <a>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -32,7 +26,13 @@
           </li>
           <li>
             <a>
-              Tags
+              Graph
+              <span class="badge badge-xs badge-info"></span>
+            </a>
+          </li>
+          <li>
+            <a>
+              Settings
               <span class="badge badge-xs badge-info"></span>
             </a>
           </li>
@@ -44,9 +44,9 @@
           </li>
         </ul>
       </div>
-      <div class="py-8">
+      <main class="py-8">
         {{template "main" .}}
-      </div>
+      </main>
     </div>
   </div>
 

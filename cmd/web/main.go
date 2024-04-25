@@ -13,7 +13,7 @@ type application struct {
 }
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("./ui/htmx/pages/home.html", "./ui/htmx/bases/layout.html")
+	t, err := template.ParseFiles("./ui/htmx/pages/home.html", "./ui/htmx/bases/layout.html", "./ui/htmx/bases/head.html")
 	if err != nil {
 		app.slog.Error(err.Error())
 		return
@@ -25,8 +25,21 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+func (app *application) transactionCreate(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("./ui/htmx/pages/transaction-create.html", "./ui/htmx/bases/clean.html", "./ui/htmx/bases/head.html")
+	if err != nil {
+		app.slog.Error(err.Error())
+		return
+	}
+
+	err = t.ExecuteTemplate(w, "clean-base", nil)
+	if err != nil {
+		app.slog.Error(err.Error())
+		return
+	}
+}
 func (app *application) transactionPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "transactionPost")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 func (app *application) categoriesView(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "categories page view")
@@ -44,7 +57,7 @@ func (app *application) categoriesPut(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "categories put")
 }
 
-func (app *application) render() {
+func (app *application) render(w http.ResponseWriter) {
 
 }
 
@@ -65,6 +78,7 @@ func main() {
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
 	mux.HandleFunc("GET /{$}", app.home)
+	mux.HandleFunc("GET /transaction/create", app.transactionCreate)
 	mux.HandleFunc("POST /transaction", app.transactionPost)
 	mux.HandleFunc("GET /categories", app.categories)
 	mux.HandleFunc("GET /categories/{id}", app.categoriesView)

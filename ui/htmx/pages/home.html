@@ -1,36 +1,140 @@
 {{ define "title" }} Home {{end}}
 
 {{define "main"}}
-<div class="grid justify-items-center grid-cols-2 gap-2">
-  <!-- <div class="flex"> -->
-  <div class="stats">
-    <div class="stat ">
-      <div class="stat-title">Out this month</div>
-      <div class="stat-value text-warning">RP -20.000</div>
+<div class="relative">
+  <div class="fixed right-2 md:right-1/4 bottom-4 z-10 ">
+    <a href="/transaction/create" hx-get="/transaction/create" hx-push-url="true" hx-target="body"
+      class="btn btn-lg btn-circle btn-active btn-primary">
+      +
+      <span class="loading loading-spinner htmx-indicator absolute"></span>
+    </a>
+  </div>
+  <div class="grid justify-items-center grid-cols-1 md:grid-cols-2 gap-2">
+    <!-- <div class="flex"> -->
+    <div class="stats">
+      <div class="stat ">
+        <div class="stat-title">Out this month</div>
+        <div class="stat-value text-warning">RP -20.000</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat ">
+        <div class="stat-title">In this month</div>
+        <div class="stat-value text-info">RP 100.000</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-title">Total this month</div>
+        <div class="stat-value text-primary">RP 80.000</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-title">Remaining total</div>
+        <div class="stat-value text-secondary">RP 180.000</div>
+      </div>
     </div>
   </div>
-  <div class="stats">
-    <div class="stat ">
-      <div class="stat-title">In this month</div>
-      <div class="stat-value text-info">RP 100.000</div>
-    </div>
-  </div>
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-title">Total this month</div>
-      <div class="stat-value text-primary">RP 80.000</div>
-    </div>
-  </div>
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-title">Remaining total</div>
-      <div class="stat-value text-secondary">RP 180.000</div>
-    </div>
+
+  <div class="overflow-x-auto container mt-2">
+    <table class="table ">
+      <!-- head -->
+      <thead>
+        <tr>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="hover cursor-pointer">
+          <td>
+            <div class="flex justify-center items-center gap-3">
+              <div class="w-12 h-12 text-3xl">
+                🍉
+              </div>
+              <div>
+                <div class="font-bold">Food</div>
+                <div class="text-sm opacity-50">02:AM</div>
+              </div>
+            </div>
+          </td>
+          <td>RP -5.000</td>
+        </tr>
+        <tr class="hover">
+          <td>
+            <div class="flex justify-center items-center gap-3">
+              <div class="w-12 h-12 text-3xl">
+                🍉
+              </div>
+              <div>
+                <div class="font-bold">Food</div>
+                <div class="text-sm opacity-50">02:AM</div>
+              </div>
+            </div>
+          </td>
+          <td>RP -5.000</td>
+        </tr>
+        <tr class="hover">
+          <td>
+            <div class="flex justify-center items-center gap-3">
+              <div class="w-12 h-12 text-3xl">
+                🍉
+              </div>
+              <div>
+                <div class="font-bold">Food</div>
+                <div class="text-sm opacity-50">02:AM</div>
+              </div>
+            </div>
+          </td>
+          <td>RP -5.000</td>
+        </tr>
+        <tr class="hover">
+          <td>
+            <div class="flex justify-center items-center gap-3">
+              <div class="w-12 h-12 text-3xl">
+                🍉
+              </div>
+              <div>
+                <div class="font-bold">Food</div>
+                <div class="text-sm opacity-50">02:AM</div>
+              </div>
+            </div>
+          </td>
+          <td>RP -5.000</td>
+        </tr>
+        <tr class="hover">
+          <td>
+            <div class="flex justify-center items-center gap-3">
+              <div class="w-12 h-12 text-3xl">
+                🍉
+              </div>
+              <div>
+                <div class="font-bold">Food</div>
+                <div class="text-sm opacity-50">02:AM</div>
+              </div>
+            </div>
+          </td>
+          <td>RP -5.000</td>
+        </tr>
+        <tr class="hover">
+          <td>
+            <div class="flex justify-center items-center gap-3">
+              <div class="w-12 h-12 text-3xl">
+                🍉
+              </div>
+              <div>
+                <div class="font-bold">Food</div>
+                <div class="text-sm opacity-50">02:AM</div>
+              </div>
+            </div>
+          </td>
+          <td>RP -5.000</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
-<div>
-  <button class="btn">asd</button>
-</div>
 
 {{end}}
