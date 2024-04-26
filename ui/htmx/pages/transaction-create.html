@@ -108,10 +108,9 @@
 
 <script>
 
-  htmx.onLoad(function (content) {
-    var dateInput = document.getElementById("date")
-    dateInput.valueAsDate = new Date()
-  })
+
+  var dateInput = document.getElementById("date")
+  dateInput.valueAsDate = new Date()
 
   function selectCategory(ev) {
     var category = document.getElementById("category")
