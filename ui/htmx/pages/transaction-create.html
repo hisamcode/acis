@@ -3,13 +3,6 @@
 {{define "main"}}
 <div class="relative px-4">
   <form action="">
-    <div class="fixed right-2 md:right-1/4 bottom-4 z-10 ">
-      <button href="/transaction/create" hx-post="/transaction" hx-push-url="true" hx-target="body"
-        class="btn btn-lg btn-square btn-active btn-primary">
-        Ok
-        <span class="loading loading-spinner htmx-indicator absolute"></span>
-      </button>
-    </div>
 
 
     <div class="fixed right-2 top-2">
@@ -28,60 +21,116 @@
     <div class="container ">
       <label class=" form-control w-full ">
         <div class=" label">
-          <span class="label-text">Nominal ?</span>
+          <span class="label-text">Nominal</span>
         </div>
-        <input type="number" placeholder="Type here" class="input input-bordered w-full " />
+        <input type="number" placeholder="Number" class="input input-bordered w-full " />
       </label>
     </div>
 
-    <div class="grid grid-cols-2 mt-2">
-      <div class="flex items-center justify-center">
-        Category
-      </div>
-      <div class="flex p-2">
+    <div class="mt-4">
+      <div onclick="showCategoriesModal()"
+        class="border-2 border-dashed opacity-50 text-sm w-full flex justify-center py-2">
         <div>
-          <div id="category" class="text-3xl">
-            ⛽
+          <div class="flex justify-center">
+            <div>
+              <div id="category" class="text-3xl">
+
+              </div>
+              <div id="sub-category" class="font-bold text-center">
+
+              </div>
+            </div>
           </div>
-          <div id="sub-category" class="font-bold text-center">
-            Food
+          <div class="flex justify-center">
+            Choose Cagetory
           </div>
         </div>
       </div>
     </div>
 
-    <div class="container p-2">
-      <div>
-        Categories
-      </div>
-      <div class="flex text-3xl mt-4 gap-3">
-        <div>
-          <div onclick="selectCategory(event)" text="Food">
-            🍉
-          </div>
-          <div class="opacity-50 text-sm text-center">
-            Food
-          </div>
+    <div class="mt-4">
+    </div>
+
+    <div class="mt-4 ">
+      <label class=" form-control w-full ">
+        <div class=" label">
+          <span class="label-text">Date</span>
         </div>
-        <div>
-          <div onclick="selectCategory(event)" text="Gas">
-            ⛽
-          </div>
-          <div class="opacity-50 text-sm text-center">
-            Gas
-          </div>
-        </div>
-      </div>
+        <input type="date" class="input w-full" name="" id="date">
+      </label>
+    </div>
+
+    <div class="">
+      <button href="/transaction/create" hx-post="/transaction" hx-push-url="true" hx-target="body"
+        class="btn btn-sm btn-square btn-primary w-full mt-4 relative">
+        Save
+        <span class="loading loading-spinner htmx-indicator absolute right-4"></span>
+      </button>
     </div>
   </form>
 </div>
 
+<div id="categories-modal" class="absolute top-0 left-0 min-h-full w-full z-10 bg-base-200 hidden">
+  <div class="fixed right-2 top-2">
+    <button onclick="closeCategoriesModal()" class="btn btn-square">
+
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+      <span class="loading loading-spinner htmx-indicator absolute"></span>
+    </button>
+  </div>
+
+  <div class="container p-2">
+    <div class="mt-6 flex justify-center text-lg">
+      Categories
+    </div>
+    <div class="flex text-3xl mt-4 gap-3">
+      <div>
+        <div onclick="selectCategory(event)" text="Food">
+          🍉
+        </div>
+        <div class="opacity-50 text-sm text-center">
+          Food
+        </div>
+      </div>
+      <div>
+        <div onclick="selectCategory(event)" text="Gas">
+          ⛽
+        </div>
+        <div class="opacity-50 text-sm text-center">
+          Gas
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+
+  htmx.onLoad(function (content) {
+    var dateInput = document.getElementById("date")
+    dateInput.valueAsDate = new Date()
+  })
+
   function selectCategory(ev) {
     var category = document.getElementById("category")
     var subCategory = document.getElementById("sub-category")
     category.innerHTML = ev.target.innerHTML
     subCategory.innerHTML = ev.target.attributes.text.value
+    closeCategoriesModal()
+  }
+
+  function showCategoriesModal() {
+    var categoriesModal = document.getElementById("categories-modal")
+    categoriesModal.classList.remove("hidden")
+    categoriesModal.classList.add("block")
+  }
+
+  function closeCategoriesModal() {
+    var categoriesModal = document.getElementById("categories-modal")
+    categoriesModal.classList.remove("block")
+    categoriesModal.classList.add("hidden")
   }
 </script>
 {{end}}
