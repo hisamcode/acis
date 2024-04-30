@@ -1,9 +1,92 @@
 package main
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
 	"html/template"
+	"net/http"
 	"path/filepath"
+
+	"github.com/go-playground/form/v4"
 )
+
+func (app *application) clientError(w http.ResponseWriter, status int) {
+	http.Error(w, http.StatusText(status), status)
+
+}
+
+func (app *application) background(fn func()) {
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				app.logger.Error(fmt.Sprintf("%v", err))
+			}
+		}()
+
+		fn()
+	}()
+}
+
+type LayoutBase byte
+
+const (
+	LayoutClean LayoutBase = iota
+	LayoutStandard
+)
+
+// use on application.render()
+func (l LayoutBase) String() string {
+	return []string{"clean-base", "base"}[l]
+}
+
+func (app *application) render(w http.ResponseWriter, base LayoutBase, page string, data templateData) {
+	var ts *template.Template
+	var ok bool
+
+	if base == LayoutClean {
+		ts, ok = app.templateCache.clean[page]
+		if !ok {
+			app.logger.Error("the template does not exist", "template", page)
+			return
+		}
+	}
+
+	if base == LayoutStandard {
+		ts, ok = app.templateCache.standard[page]
+		if !ok {
+			app.logger.Error("the template does not exist", "template", page)
+			return
+		}
+	}
+
+	buf := new(bytes.Buffer)
+	err := ts.ExecuteTemplate(buf, base.String(), data)
+	if err != nil {
+		app.logger.Error(err.Error())
+		return
+	}
+	buf.WriteTo(w)
+}
+
+func (app *application) decodePostForm(r *http.Request, dst any) error {
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+
+	err = app.formDecoder.Decode(dst, r.PostForm)
+	if err != nil {
+		var invalidDecoderError *form.InvalidDecoderError
+		if errors.As(err, &invalidDecoderError) {
+			app.logger.Error(err.Error())
+		}
+
+		return err
+	}
+
+	return nil
+}
 
 type templateCache struct {
 	clean    map[string]*template.Template

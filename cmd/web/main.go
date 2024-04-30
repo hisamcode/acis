@@ -10,6 +10,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-playground/form/v4"
+	"github.com/hisamcode/acis/internal/mailer"
 	"github.com/hisamcode/acis/internal/repository"
 	"github.com/hisamcode/acis/internal/repository/postgres"
 	_ "github.com/lib/pq"
@@ -20,6 +22,13 @@ type config struct {
 	env  string
 	db   struct {
 		dsn string
+	}
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
 	}
 }
 
@@ -32,6 +41,8 @@ type application struct {
 	logger        *slog.Logger
 	DB            DB
 	templateCache templateCache
+	formDecoder   *form.Decoder
+	mailer        mailer.Mailer
 }
 
 func main() {
@@ -39,6 +50,13 @@ func main() {
 	flag.IntVar(&cfg.port, "port", 8000, "web server port")
 	flag.StringVar(&cfg.env, "env", "development", "environment (development|staging|production)")
 	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://acis:acis@localhost/acis?sslmode=disable", "postgreSQL dsn")
+
+	flag.StringVar(&cfg.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
+	flag.IntVar(&cfg.smtp.port, "smtp-port", 25, "SMTP port")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "301cac5016d7a1", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "4a3d921250b5ad", "SMTP password")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Acis <no-reply@acis.hisam.my.id>", "SMTP sender")
+
 	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -59,6 +77,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	formDecoder := form.NewDecoder()
+
 	app := application{
 		config: cfg,
 		logger: logger,
@@ -66,6 +86,8 @@ func main() {
 			User: postgres.UserModel{DB: db},
 		},
 		templateCache: templateCache,
+		formDecoder:   formDecoder,
+		mailer:        mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
 
 	server := http.Server{}

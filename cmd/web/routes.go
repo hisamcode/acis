@@ -10,6 +10,7 @@ func (app *application) routes() *http.ServeMux {
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
 	mux.HandleFunc("GET /signup", app.signup)
+	mux.HandleFunc("POST /signup", app.signupPost)
 
 	mux.HandleFunc("GET /{$}", app.home)
 	mux.HandleFunc("GET /transaction/create", app.transactionCreate)

@@ -8,6 +8,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var (
+	ErrDuplicateEmail = errors.New("duplicate email")
+	ErrRecordNotFound = errors.New("record not found")
+	ErrEditConflict   = errors.New("edit conflict")
+)
+
 // represent individual user
 type User struct {
 	ID          int64
@@ -60,22 +66,22 @@ func (p *password) Matches(plaintextPassword string) (bool, error) {
 
 // check email != "" and check email from validator.EmailRX regexp
 func ValidateEmail(v *validator.Validator, email string) {
-	v.Check(email != "", "email", "must be provided")
-	v.Check(validator.Matches(email, validator.EmailRX), "email", "must be valid email address")
+	v.Check(email != "", "email", "Email must be provided")
+	v.Check(validator.Matches(email, validator.EmailRX), "email", "Email must be valid email address")
 }
 
 // check password not empty and password >=8 and password <=72
 func ValidatePasswordPlaintext(v *validator.Validator, password string) {
-	v.Check(password != "", "password", "must be provided")
-	v.Check(len(password) >= 8, "password", "must be at least 8 bytes long")
-	v.Check(len(password) <= 72, "password", "must not be more than 72 bytes long")
+	v.Check(password != "", "password", "password must be provided")
+	v.Check(len(password) >= 8, "password", "Password must be at least 8 bytes long")
+	v.Check(len(password) <= 72, "password", "Password must not be more than 72 bytes long")
 }
 
 // check user.Name not empty and check length user.name <=500 bytes
 // and call ValidateEmail() and call ValidatePasswordPlaintext()
 func ValidateUser(v *validator.Validator, user *User) {
-	v.Check(user.Name != "", "name", "must be provided")
-	v.Check(len(user.Name) <= 500, "name", "must not be more than 500 bytes long")
+	v.Check(user.Name != "", "name", "Name must be provided")
+	v.Check(len(user.Name) <= 500, "name", "Name must not be more than 500 bytes long")
 
 	ValidateEmail(v, user.Email)
 

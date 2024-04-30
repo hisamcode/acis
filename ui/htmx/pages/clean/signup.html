@@ -8,16 +8,18 @@
     </div>
 
     <div>
-      <form action="">
+      <form action="" hx-post="/signup" hx-push-url="true" hx-target="body">
         <div class="mt-2">
           <label class="form-control w-full">
             <div class=" label">
               <span class="label-text">Name</span>
             </div>
             <input type="text" name="name" placeholder="Name" class="input input-bordered w-full text-center" />
+            {{with .Form.FieldErrors.name}}
             <div class=" label">
-              <span class="label-text text-warning">Name</span>
+              <span class="label-text text-warning">{{.}}</span>
             </div>
+            {{end}}
           </label>
         </div>
 
@@ -27,6 +29,11 @@
               <span class="label-text">Email</span>
             </div>
             <input type="email" name="email" placeholder="Email" class="input input-bordered w-full text-center" />
+            {{with .Form.FieldErrors.email}}
+            <div class=" label">
+              <span class="label-text text-warning">{{.}}</span>
+            </div>
+            {{end}}
           </label>
         </div>
 
@@ -37,6 +44,11 @@
             </div>
             <input type="password" name="password" placeholder="Password"
               class="input input-bordered w-full text-center" />
+            {{with .Form.FieldErrors.password}}
+            <div class=" label">
+              <span class="label-text text-warning">{{.}}</span>
+            </div>
+            {{end}}
           </label>
         </div>
 
@@ -47,6 +59,11 @@
             </div>
             <input type="password" name="repeat_password" placeholder="Password"
               class="input input-bordered w-full text-center" />
+            {{with .Form.FieldErrors.repeatPassword}}
+            <div class=" label">
+              <span class="label-text text-warning">{{.}}</span>
+            </div>
+            {{end}}
           </label>
         </div>
 

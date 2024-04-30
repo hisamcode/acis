@@ -11,12 +11,6 @@ import (
 
 const dbTimeout = 3 * time.Second
 
-var (
-	ErrDuplicateEmail = errors.New("duplicate email")
-	ErrRecordNotFound = errors.New("record not found")
-	ErrEditConflict   = errors.New("edit conflict")
-)
-
 type UserModel struct {
 	DB *sql.DB
 }
@@ -37,7 +31,7 @@ func (m UserModel) Insert(user *data.User) error {
 	if err != nil {
 		switch {
 		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
-			return ErrDuplicateEmail
+			return data.ErrDuplicateEmail
 		default:
 			return err
 		}
@@ -71,7 +65,7 @@ func (m UserModel) GetByEmail(email string) (*data.User, error) {
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return nil, ErrRecordNotFound
+			return nil, data.ErrRecordNotFound
 		default:
 			return nil, err
 		}
@@ -104,9 +98,9 @@ func (m UserModel) UpdateUser(user *data.User) error {
 	if err != nil {
 		switch {
 		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
-			return ErrDuplicateEmail
+			return data.ErrDuplicateEmail
 		case errors.Is(err, sql.ErrNoRows):
-			return ErrEditConflict
+			return data.ErrEditConflict
 		default:
 			return err
 		}
