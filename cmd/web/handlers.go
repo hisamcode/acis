@@ -29,6 +29,6 @@ func (app *application) categoriesEdit(w http.ResponseWriter, r *http.Request) {
 func (app *application) categoriesPut(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "categories put")
 }
-func (app *application) register(w http.ResponseWriter, r *http.Request) {
-	app.render(w, LayoutClean, "register.html")
+func (app *application) signup(w http.ResponseWriter, r *http.Request) {
+	app.render(w, LayoutClean, "signup.html")
 }
