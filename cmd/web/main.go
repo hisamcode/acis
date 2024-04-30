@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"flag"
@@ -11,6 +12,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/hisamcode/acis/internal/repository"
+	"github.com/hisamcode/acis/internal/repository/postgres"
 	_ "github.com/lib/pq"
 )
 
@@ -22,78 +25,55 @@ type config struct {
 	}
 }
 
+type DB struct {
+	User repository.UserDatabaseRepo
+}
+
 type application struct {
-	config config
-	logger *slog.Logger
+	config        config
+	logger        *slog.Logger
+	DB            DB
+	templateCache templateCache
 }
 
-func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("./ui/htmx/pages/home.html", "./ui/htmx/bases/layout.html", "./ui/htmx/bases/head.html")
+type LayoutBase byte
+
+const (
+	LayoutClean LayoutBase = iota
+	LayoutStandard
+)
+
+func (l LayoutBase) String() string {
+	return []string{"clean-base", "base"}[l]
+}
+
+func (app *application) render(w http.ResponseWriter, base LayoutBase, page string) {
+	var ts *template.Template
+	var ok bool
+
+	if base == LayoutClean {
+		ts, ok = app.templateCache.clean[page]
+		if !ok {
+			app.logger.Error("the template does not exist", "template", page)
+			return
+		}
+	}
+
+	if base == LayoutStandard {
+		ts, ok = app.templateCache.standard[page]
+		if !ok {
+			app.logger.Error("the template does not exist", "template", page)
+			return
+		}
+	}
+
+	buf := new(bytes.Buffer)
+	err := ts.ExecuteTemplate(buf, base.String(), nil)
 	if err != nil {
 		app.logger.Error(err.Error())
 		return
 	}
-
-	err = t.ExecuteTemplate(w, "base", nil)
-	if err != nil {
-		app.logger.Error(err.Error())
-		return
-	}
-}
-func (app *application) transactionCreate(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("./ui/htmx/pages/transaction-create.html", "./ui/htmx/bases/clean.html", "./ui/htmx/bases/head.html")
-	if err != nil {
-		app.logger.Error(err.Error())
-		return
-	}
-
-	err = t.ExecuteTemplate(w, "clean-base", nil)
-	if err != nil {
-		app.logger.Error(err.Error())
-		return
-	}
-}
-func (app *application) transactionPost(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-func (app *application) categoriesView(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "categories page view")
-}
-func (app *application) categories(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "categories page list")
-}
-func (app *application) categoriesPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "create categories")
-}
-func (app *application) categoriesEdit(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "categories edit")
-}
-func (app *application) categoriesPut(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "categories put")
-}
-
-func (app *application) render(w http.ResponseWriter) {
-
-}
-
-func (app *application) routes() *http.ServeMux {
-	mux := http.NewServeMux()
-
-	fileServer := http.FileServer(http.Dir("./ui/static"))
-
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
-
-	mux.HandleFunc("GET /{$}", app.home)
-	mux.HandleFunc("GET /transaction/create", app.transactionCreate)
-	mux.HandleFunc("POST /transaction", app.transactionPost)
-	mux.HandleFunc("GET /categories", app.categories)
-	mux.HandleFunc("GET /categories/{id}", app.categoriesView)
-	mux.HandleFunc("GET /categories/create", app.categories)
-	mux.HandleFunc("POST /categories", app.categoriesPost)
-	mux.HandleFunc("GET /categories/{id}/edit", app.categoriesEdit)
-	mux.HandleFunc("PUT /categories/{id}", app.categoriesPut)
-	return mux
-
+	buf.WriteTo(w)
 }
 
 func main() {
@@ -115,9 +95,19 @@ func main() {
 	defer db.Close()
 	logger.Info("database connection pool established")
 
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
 	app := application{
 		config: cfg,
 		logger: logger,
+		DB: DB{
+			User: postgres.UserModel{DB: db},
+		},
+		templateCache: templateCache,
 	}
 
 	server := http.Server{}
