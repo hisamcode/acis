@@ -1,6 +1,5 @@
 # !/bin/bash
 set -e
-# \c :acis_db;
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     \set acis_db `echo $POSTGRES_ACIS_DB`
@@ -10,5 +9,6 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE USER :acis_user WITH PASSWORD :'acis_password';
     GRANT ALL PRIVILEGES ON DATABASE :acis_db TO :acis_user;
     ALTER DATABASE :acis_db OWNER to :acis_user;
+    \c :acis_db;
     create extension if not exists "citext";
 EOSQL
