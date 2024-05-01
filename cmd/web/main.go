@@ -33,7 +33,7 @@ type config struct {
 }
 
 type DB struct {
-	User repository.UserDatabaseRepo
+	User repository.UserDatabaseRepoer
 }
 
 type application struct {
