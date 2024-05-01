@@ -6,8 +6,8 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/go-playground/form/v4"
@@ -43,6 +43,7 @@ type application struct {
 	templateCache templateCache
 	formDecoder   *form.Decoder
 	mailer        mailer.Mailer
+	wg            sync.WaitGroup
 }
 
 func main() {
@@ -58,6 +59,10 @@ func main() {
 	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Acis <no-reply@acis.hisam.my.id>", "SMTP sender")
 
 	flag.Parse()
+
+	if cfg.env == "development" {
+		fmt.Println(os.Getpid())
+	}
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
@@ -90,22 +95,11 @@ func main() {
 		mailer:        mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
 
-	server := http.Server{}
-	if app.config.env == "development" {
-		server.Addr = fmt.Sprintf("127.0.0.1:%d", app.config.port)
-	} else {
-		server.Addr = fmt.Sprintf(":%d", app.config.port)
+	err = app.serve()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
-	server.Handler = app.routes()
-	server.IdleTimeout = time.Minute
-	server.ReadTimeout = 5 * time.Second
-	server.WriteTimeout = 10 * time.Second
-	server.ErrorLog = slog.NewLogLogger(logger.Handler(), slog.LevelError)
-
-	logger.Info("starting server", "addr", server.Addr, "env", app.config.env)
-	err = server.ListenAndServe()
-	logger.Error(err.Error())
-	os.Exit(1)
 
 }
 

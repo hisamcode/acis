@@ -64,3 +64,8 @@ what total this year ?
 what remaining total I have, all of them ?
 
 transaction per month, day, year?
+
+
+```
+curl -X POST localhost:8000/signup -H "Content-Type: application/x-www-form-urlencoded" -d "name=test&email=test1@test.com&password=123123123&repeat_password=123123123" && windows-kill -SIGINT 13716
+```
