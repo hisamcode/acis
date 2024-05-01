@@ -33,7 +33,8 @@ type config struct {
 }
 
 type DB struct {
-	User repository.UserDatabaseRepoer
+	User  repository.UserDatabaseRepoer
+	Token repository.TokenDatabaseRepoer
 }
 
 type application struct {
@@ -88,7 +89,8 @@ func main() {
 		config: cfg,
 		logger: logger,
 		DB: DB{
-			User: postgres.UserModel{DB: db},
+			User:  postgres.UserModel{DB: db},
+			Token: postgres.TokenModel{DB: db},
 		},
 		templateCache: templateCache,
 		formDecoder:   formDecoder,

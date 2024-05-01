@@ -4,12 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 
 	"github.com/hisamcode/acis/internal/data"
 )
-
-const dbTimeout = 3 * time.Second
 
 type UserModel struct {
 	DB *sql.DB
