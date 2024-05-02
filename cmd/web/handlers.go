@@ -4,16 +4,17 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/hisamcode/acis/internal/data"
 	"github.com/hisamcode/acis/internal/validator"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	app.render(w, LayoutStandard, "home.html", templateData{})
+	app.render(w, http.StatusOK, LayoutStandard, "home.html", templateData{})
 }
 func (app *application) transactionCreate(w http.ResponseWriter, r *http.Request) {
-	app.render(w, LayoutClean, "transaction-create.html", templateData{})
+	app.render(w, http.StatusOK, LayoutClean, "transaction-create.html", templateData{})
 }
 func (app *application) transactionPost(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -34,7 +35,7 @@ func (app *application) categoriesPut(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "categories put")
 }
 
-type SignupForm struct {
+type signupForm struct {
 	Name                string `form:"name"`
 	Email               string `form:"email"`
 	Password            string `form:"password"`
@@ -44,17 +45,17 @@ type SignupForm struct {
 
 func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
-	data.Form = SignupForm{}
-	app.render(w, LayoutClean, "signup.html", data)
+	data.Form = signupForm{}
+	app.render(w, http.StatusOK, LayoutClean, "signup.html", data)
 }
 
 func (app *application) signupPost(w http.ResponseWriter, r *http.Request) {
 
-	var form SignupForm
+	var form signupForm
 
 	err := app.decodePostForm(r, &form)
 	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+		app.renderServerError(w, err)
 		return
 	}
 
@@ -66,8 +67,7 @@ func (app *application) signupPost(w http.ResponseWriter, r *http.Request) {
 
 	err = user.Password.Set(form.Password)
 	if err != nil {
-		// TODO: error server
-		app.clientError(w, http.StatusBadRequest)
+		app.renderServerError(w, err)
 		return
 	}
 
@@ -76,7 +76,7 @@ func (app *application) signupPost(w http.ResponseWriter, r *http.Request) {
 	if data.ValidateUser(&form.Validator, &user); !form.Valid() {
 		data := app.newTemplateData()
 		data.Form = form
-		app.render(w, LayoutClean, "signup.html", data)
+		app.render(w, http.StatusOK, LayoutClean, "signup.html", data)
 		return
 	}
 
@@ -84,27 +84,104 @@ func (app *application) signupPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrDuplicateEmail):
-			// TODO: duplicate error
 			form.AddFieldError("email", "a user with this email adress already exists")
 			data := app.newTemplateData()
 			data.Form = form
-			app.render(w, LayoutClean, "signup.html", data)
+			app.render(w, http.StatusOK, LayoutClean, "signup.html", data)
 		default:
-			// TODO server errro
-			app.logger.Error(err.Error())
+			app.renderServerError(w, err)
 		}
 		return
 	}
 
+	durationActivation, _ := time.ParseDuration(app.config.activationAccountDuration)
+	token, err := app.DB.Token.New(user.ID, durationActivation, data.ScopeActivation)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
 	app.background(func() {
-		err = app.mailer.Send(user.Email, "user_welcome.html", user)
+		data := map[string]any{
+			"activationToken": token.Plaintext,
+			"userID":          user.ID,
+			"link":            app.config.host,
+		}
+		app.logger.Info("Send email activation", "email", user.Email)
+		err = app.mailer.Send(user.Email, "user_welcome.html", data)
 		if err != nil {
 			app.logger.Error(err.Error())
-			fmt.Fprintf(w, "sending email failed: %v", err)
 			return
 		}
 	})
 
-	fmt.Fprintf(w, "create a new user...")
+	http.Redirect(w, r, "/user/activated?is=check-email", http.StatusSeeOther)
+}
+
+func (app *application) activateAccount(w http.ResponseWriter, r *http.Request) {
+	// TODO: flash message after registered like thankyou for registered,
+	// please check your email for activated your account
+
+	p := r.URL.Query().Get("p")
+
+	if p == "token" {
+		token := r.URL.Query().Get("token")
+
+		v := validator.New()
+		if data.ValidateTokenPlaintext(v, token); !v.Valid() {
+			data := app.newTemplateData()
+			data.Form = v
+			data.TokenActivate = token
+			app.render(w, http.StatusOK, LayoutClean, "activate-account.html", data)
+			return
+		}
+
+		user, err := app.DB.User.GetForToken(data.ScopeActivation, token)
+		if err != nil {
+			app.logger.Error(err.Error())
+			switch {
+			case errors.Is(err, data.ErrRecordNotFound):
+				v.AddFieldError("token", "token is invalid or expired activation token")
+				data := app.newTemplateData()
+				data.Form = v
+				data.TokenActivate = token
+				app.render(w, http.StatusOK, LayoutClean, "activate-account.html", data)
+			default:
+				app.renderServerError(w, err)
+			}
+			return
+		}
+
+		user.Activated = true
+
+		err = app.DB.User.Update(user)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrEditConflict):
+				app.renderEditConflict(w, err)
+			default:
+				app.renderServerError(w, err)
+			}
+			return
+		}
+
+		err = app.DB.Token.DeleteAllForUser(data.ScopeActivation, user.ID)
+		if err != nil {
+			app.renderServerError(w, err)
+			return
+		}
+
+		// TODO: message activation success
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	data := app.newTemplateData()
+	data.Form = struct {
+		FieldErrors map[string]string
+	}{
+		FieldErrors: make(map[string]string),
+	}
+	app.render(w, http.StatusOK, LayoutClean, "activate-account.html", data)
 
 }

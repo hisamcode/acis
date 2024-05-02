@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"flag"
-	"fmt"
 	"log/slog"
 	"os"
 	"sync"
@@ -17,7 +16,14 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const (
+	DEVELOPMENT = "development"
+	STAGING     = "staging"
+	PRODUCTION  = "production"
+)
+
 type config struct {
+	host string
 	port int
 	env  string
 	db   struct {
@@ -30,6 +36,7 @@ type config struct {
 		password string
 		sender   string
 	}
+	activationAccountDuration string
 }
 
 type DB struct {
@@ -49,8 +56,9 @@ type application struct {
 
 func main() {
 	var cfg config
+	flag.StringVar(&cfg.host, "addr", "127.0.0.1:8000", "addr web server, ip or domain")
 	flag.IntVar(&cfg.port, "port", 8000, "web server port")
-	flag.StringVar(&cfg.env, "env", "development", "environment (development|staging|production)")
+	flag.StringVar(&cfg.env, "env", DEVELOPMENT, "environment (development|staging|production)")
 	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://acis:acis@localhost/acis?sslmode=disable", "postgreSQL dsn")
 
 	flag.StringVar(&cfg.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
@@ -59,11 +67,9 @@ func main() {
 	flag.StringVar(&cfg.smtp.password, "smtp-password", "4a3d921250b5ad", "SMTP password")
 	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Acis <no-reply@acis.hisam.my.id>", "SMTP sender")
 
-	flag.Parse()
+	flag.StringVar(&cfg.activationAccountDuration, "activation-account-duration", "72h", "Activation account duration when signup")
 
-	if cfg.env == "development" {
-		fmt.Println(os.Getpid())
-	}
+	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,

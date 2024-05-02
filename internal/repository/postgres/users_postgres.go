@@ -2,8 +2,10 @@ package postgres
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/hisamcode/acis/internal/data"
 )
@@ -71,7 +73,7 @@ func (m UserModel) GetByEmail(email string) (*data.User, error) {
 	return &user, nil
 }
 
-func (m UserModel) UpdateUser(user *data.User) error {
+func (m UserModel) Update(user *data.User) error {
 	query := `
 		UPDATE users
 		SET name = $1, email = $2, password_hash = $3, activated = $4, version = version + 1
@@ -104,4 +106,45 @@ func (m UserModel) UpdateUser(user *data.User) error {
 	}
 
 	return nil
+}
+
+func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*data.User, error) {
+	tokenHash := sha256.Sum256([]byte(tokenPlaintext))
+
+	query := `
+		SELECT users.id, users.created_at, users.name, users.email, users.password_hash, users.activated, users.version
+		FROM users
+		INNER JOIN tokens
+		ON users.id = tokens.user_id
+		WHERE tokens.hash = $1
+		AND tokens.scope = $2
+		AND tokens.expiry > $3
+	`
+
+	args := []any{tokenHash[:], tokenScope, time.Now()}
+
+	var user data.User
+
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.Name,
+		&user.Email,
+		&user.Password.Hash,
+		&user.Activated,
+		&user.Version,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, data.ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
 }

@@ -9,7 +9,8 @@ import (
 type UserDatabaseRepoer interface {
 	Insert(user *data.User) error
 	GetByEmail(email string) (*data.User, error)
-	UpdateUser(user *data.User) error
+	Update(user *data.User) error
+	GetForToken(tokenScope, tokenPlaintext string) (*data.User, error)
 }
 
 type TokenDatabaseRepoer interface {

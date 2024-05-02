@@ -5,7 +5,21 @@ Hi,
 
 Thanks for signing up for a Acis account. We're excited to have you on board!
 
-For future reference, your user ID number is {{.ID}}.
+For future reference, your user ID number is {{.userID}}.
+
+Please click link below to activate your account:
+
+https://{{.link}}/user/activated?p=token&token={{.activationToken}}
+
+Or you can go to this link below:
+
+https://{{.link}}/user/activated
+
+and paste the token:
+
+{{.activationToken}}
+
+Please note that this is a one-time use token and it will expire in 3 days.
 
 Thanks,
 
@@ -24,7 +38,16 @@ The Acis Team
 <body>
   <p>Hi,</p>
   <p>Thanks for signing up for a Acis account. We're excited to have you on board!</p>
-  <p>For future reference, your user ID number is {{.ID}}.</p>
+  <p>For future reference, your user ID number is {{.userID}}.</p>
+  <p>Please click link below to activate your account:</p>
+  <a href="https://{{.link}}/user/activated?p=token&token={{.activationToken}}">Activate your account</a>
+  <p>Or you can go to this link:</p>
+  <a href="https://{{.link}}/user/activated">Activate your account</a>
+  <p>and paste this token:</p>
+  <pre><code>
+    {{.activationToken}}
+    </code></pre>
+  <p>Please note that this is a one-time use token and it will expire in 3 days.</p>
   <p>Thanks,</p>
   <p>The Acis Team</p>
 </body>

@@ -11,6 +11,7 @@ func (app *application) routes() *http.ServeMux {
 
 	mux.HandleFunc("GET /signup", app.signup)
 	mux.HandleFunc("POST /signup", app.signupPost)
+	mux.HandleFunc("GET /user/activated", app.activateAccount)
 
 	mux.HandleFunc("GET /{$}", app.home)
 	mux.HandleFunc("GET /transaction/create", app.transactionCreate)

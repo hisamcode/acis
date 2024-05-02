@@ -1,7 +1,8 @@
 package main
 
 type templateData struct {
-	Form any
+	Form          any
+	TokenActivate string
 }
 
 func (app *application) newTemplateData() templateData {
