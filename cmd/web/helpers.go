@@ -11,6 +11,14 @@ import (
 	"github.com/go-playground/form/v4"
 )
 
+func (app *application) renderServerError(w http.ResponseWriter, err error) {
+	app.logger.Error(err.Error())
+	app.render(w, http.StatusInternalServerError, LayoutClean, "server-error.html", templateData{})
+}
+func (app *application) renderEditConflict(w http.ResponseWriter, err error) {
+	app.logger.Error(err.Error())
+	app.render(w, http.StatusConflict, LayoutClean, "edit-conflict.html", templateData{})
+}
 func (app *application) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 
@@ -42,7 +50,7 @@ func (l LayoutBase) String() string {
 	return []string{"clean-base", "base"}[l]
 }
 
-func (app *application) render(w http.ResponseWriter, base LayoutBase, page string, data templateData) {
+func (app *application) render(w http.ResponseWriter, status int, base LayoutBase, page string, data templateData) {
 	var ts *template.Template
 	var ok bool
 
@@ -68,6 +76,7 @@ func (app *application) render(w http.ResponseWriter, base LayoutBase, page stri
 		app.logger.Error(err.Error())
 		return
 	}
+	w.WriteHeader(status)
 	buf.WriteTo(w)
 }
 
