@@ -15,11 +15,7 @@ import (
 func (app *application) serve() error {
 
 	server := http.Server{}
-	if app.config.env == "development" {
-		server.Addr = fmt.Sprintf("127.0.0.1:%d", app.config.port)
-	} else {
-		server.Addr = fmt.Sprintf(":%d", app.config.port)
-	}
+	server.Addr = fmt.Sprintf("127.0.0.1:%d", app.config.port)
 	server.Handler = app.routes()
 	server.IdleTimeout = time.Minute
 	server.ReadTimeout = 5 * time.Second
