@@ -19,10 +19,6 @@ func (app *application) renderEditConflict(w http.ResponseWriter, err error) {
 	app.logger.Error(err.Error())
 	app.render(w, http.StatusConflict, LayoutClean, "edit-conflict.html", templateData{})
 }
-func (app *application) clientError(w http.ResponseWriter, status int) {
-	http.Error(w, http.StatusText(status), status)
-
-}
 
 func (app *application) background(fn func()) {
 	app.wg.Add(1)
