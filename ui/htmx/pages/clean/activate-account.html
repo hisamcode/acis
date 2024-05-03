@@ -9,6 +9,7 @@
     </div>
 
     <form action="" hx-get="/user/activated?p=token" hx-target="body" hx-push-url="true">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
       <div class="mt-2">
         <label class="form-control w-full">
           <div class=" label">

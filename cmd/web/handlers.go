@@ -12,7 +12,8 @@ import (
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	app.render(w, http.StatusOK, LayoutStandard, "home.html", templateData{})
+	data := app.newTemplateData(r)
+	app.render(w, http.StatusOK, LayoutStandard, "home.html", data)
 }
 func (app *application) transactionCreate(w http.ResponseWriter, r *http.Request) {
 	app.render(w, http.StatusOK, LayoutClean, "transaction-create.html", templateData{})
@@ -45,7 +46,7 @@ type signupForm struct {
 }
 
 func (app *application) signup(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData()
+	data := app.newTemplateData(r)
 	data.Form = signupForm{}
 	app.render(w, http.StatusOK, LayoutClean, "signup.html", data)
 }
@@ -75,7 +76,7 @@ func (app *application) signupPost(w http.ResponseWriter, r *http.Request) {
 	form.Validator = *validator.New()
 	form.Validator.Check(validator.Equal(form.Password, form.RepeatPassword), "repeatPassword", "Repeat password not same")
 	if data.ValidateUser(&form.Validator, &user); !form.Valid() {
-		data := app.newTemplateData()
+		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, http.StatusOK, LayoutClean, "signup.html", data)
 		return
@@ -86,7 +87,7 @@ func (app *application) signupPost(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, data.ErrDuplicateEmail):
 			form.AddFieldError("email", "a user with this email adress already exists")
-			data := app.newTemplateData()
+			data := app.newTemplateData(r)
 			data.Form = form
 			app.render(w, http.StatusOK, LayoutClean, "signup.html", data)
 		default:
@@ -130,7 +131,7 @@ func (app *application) activateAccount(w http.ResponseWriter, r *http.Request) 
 
 		v := validator.New()
 		if data.ValidateTokenPlaintext(v, token); !v.Valid() {
-			data := app.newTemplateData()
+			data := app.newTemplateData(r)
 			data.Form = v
 			data.TokenActivate = token
 			app.render(w, http.StatusOK, LayoutClean, "activate-account.html", data)
@@ -143,7 +144,7 @@ func (app *application) activateAccount(w http.ResponseWriter, r *http.Request) 
 			switch {
 			case errors.Is(err, data.ErrRecordNotFound):
 				v.AddFieldError("token", "token is invalid or expired activation token")
-				data := app.newTemplateData()
+				data := app.newTemplateData(r)
 				data.Form = v
 				data.TokenActivate = token
 				app.render(w, http.StatusOK, LayoutClean, "activate-account.html", data)
@@ -177,7 +178,7 @@ func (app *application) activateAccount(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	data := app.newTemplateData()
+	data := app.newTemplateData(r)
 	data.Form = struct {
 		FieldErrors map[string]string
 	}{
@@ -195,7 +196,7 @@ type signinForm struct {
 
 func (app *application) signin(w http.ResponseWriter, r *http.Request) {
 	form := signinForm{}
-	data := app.newTemplateData()
+	data := app.newTemplateData(r)
 	data.Form = form
 	app.render(w, http.StatusOK, LayoutClean, "signin.html", data)
 }
@@ -214,7 +215,7 @@ func (app *application) signinPost(w http.ResponseWriter, r *http.Request) {
 	data.ValidatePasswordPlaintext(&form.Validator, form.Password)
 
 	if !form.Valid() {
-		data := app.newTemplateData()
+		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, http.StatusOK, LayoutClean, "signin.html", data)
 		return
@@ -226,7 +227,7 @@ func (app *application) signinPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !form.Valid() {
-		data := app.newTemplateData()
+		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, http.StatusOK, LayoutClean, "signin.html", data)
 		return
@@ -240,7 +241,7 @@ func (app *application) signinPost(w http.ResponseWriter, r *http.Request) {
 
 	if !passwordOk {
 		form.AddFieldError("password", "password not match")
-		data := app.newTemplateData()
+		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, http.StatusOK, LayoutClean, "signin.html", data)
 		return
@@ -248,7 +249,7 @@ func (app *application) signinPost(w http.ResponseWriter, r *http.Request) {
 
 	if !user.Activated {
 		form.AddFieldError("email", "User not activated")
-		data := app.newTemplateData()
+		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, http.StatusOK, LayoutClean, "signin.html", data)
 		return

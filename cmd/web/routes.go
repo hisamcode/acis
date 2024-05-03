@@ -13,7 +13,7 @@ func (app *application) routes() *http.ServeMux {
 
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
-	dynamic := alice.New(app.sessionManager.LoadAndSave)
+	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
 
 	mux.Handle("GET /signin", dynamic.ThenFunc(app.signin))
 	mux.Handle("POST /signin", dynamic.ThenFunc(app.signinPost))
