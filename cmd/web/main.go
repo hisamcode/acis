@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/alexedwards/scs/postgresstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	"github.com/hisamcode/acis/internal/mailer"
 	"github.com/hisamcode/acis/internal/repository"
@@ -45,13 +47,14 @@ type DB struct {
 }
 
 type application struct {
-	config        config
-	logger        *slog.Logger
-	DB            DB
-	templateCache templateCache
-	formDecoder   *form.Decoder
-	mailer        mailer.Mailer
-	wg            sync.WaitGroup
+	config         config
+	logger         *slog.Logger
+	DB             DB
+	templateCache  templateCache
+	formDecoder    *form.Decoder
+	mailer         mailer.Mailer
+	wg             sync.WaitGroup
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -91,6 +94,11 @@ func main() {
 
 	formDecoder := form.NewDecoder()
 
+	sessionManager := scs.New()
+	sessionManager.Store = postgresstore.New(db)
+	// automatically expire after 12 hours after first being created
+	sessionManager.Lifetime = 12 * time.Hour
+
 	app := application{
 		config: cfg,
 		logger: logger,
@@ -98,9 +106,10 @@ func main() {
 			User:  postgres.UserModel{DB: db},
 			Token: postgres.TokenModel{DB: db},
 		},
-		templateCache: templateCache,
-		formDecoder:   formDecoder,
-		mailer:        mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
+		templateCache:  templateCache,
+		formDecoder:    formDecoder,
+		mailer:         mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
+		sessionManager: sessionManager,
 	}
 
 	err = app.serve()

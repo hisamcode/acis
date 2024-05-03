@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/justinas/alice"
+)
 
 func (app *application) routes() *http.ServeMux {
 	mux := http.NewServeMux()
@@ -9,19 +13,23 @@ func (app *application) routes() *http.ServeMux {
 
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
-	mux.HandleFunc("GET /signup", app.signup)
-	mux.HandleFunc("POST /signup", app.signupPost)
-	mux.HandleFunc("GET /user/activated", app.activateAccount)
+	dynamic := alice.New(app.sessionManager.LoadAndSave)
 
-	mux.HandleFunc("GET /{$}", app.home)
-	mux.HandleFunc("GET /transaction/create", app.transactionCreate)
-	mux.HandleFunc("POST /transaction", app.transactionPost)
-	mux.HandleFunc("GET /categories", app.categories)
-	mux.HandleFunc("GET /categories/{id}", app.categoriesView)
-	mux.HandleFunc("GET /categories/create", app.categories)
-	mux.HandleFunc("POST /categories", app.categoriesPost)
-	mux.HandleFunc("GET /categories/{id}/edit", app.categoriesEdit)
-	mux.HandleFunc("PUT /categories/{id}", app.categoriesPut)
+	mux.Handle("GET /signin", dynamic.ThenFunc(app.signin))
+	mux.Handle("POST /signin", dynamic.ThenFunc(app.signinPost))
+	mux.Handle("GET /signup", dynamic.ThenFunc(app.signup))
+	mux.Handle("POST /signup", dynamic.ThenFunc(app.signupPost))
+	mux.Handle("GET /user/activated", dynamic.ThenFunc(app.activateAccount))
+
+	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home))
+	mux.Handle("GET /transaction/create", dynamic.ThenFunc(app.transactionCreate))
+	mux.Handle("POST /transaction", dynamic.ThenFunc(app.transactionPost))
+	mux.Handle("GET /categories", dynamic.ThenFunc(app.categories))
+	mux.Handle("GET /categories/{id}", dynamic.ThenFunc(app.categoriesView))
+	mux.Handle("GET /categories/create", dynamic.ThenFunc(app.categories))
+	mux.Handle("POST /categories", dynamic.ThenFunc(app.categoriesPost))
+	mux.Handle("GET /categories/{id}/edit", dynamic.ThenFunc(app.categoriesEdit))
+	mux.Handle("PUT /categories/{id}", dynamic.ThenFunc(app.categoriesPut))
 	return mux
 
 }
