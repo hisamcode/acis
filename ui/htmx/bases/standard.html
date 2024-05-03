@@ -37,10 +37,12 @@
             </a>
           </li>
           <li>
-            <a>
-              Logout
-              <span class="badge badge-xs badge-info"></span>
-            </a>
+            <form action="" hx-post="/signout" hx-target="body" hx-push-url="true">
+              <button>
+                Logout
+                <span class="badge badge-xs badge-info"></span>
+              </button>
+            </form>
           </li>
         </ul>
       </div>

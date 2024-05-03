@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hisamcode/acis/internal/data"
+	"github.com/hisamcode/acis/internal/session"
 	"github.com/hisamcode/acis/internal/validator"
 )
 
@@ -184,4 +185,94 @@ func (app *application) activateAccount(w http.ResponseWriter, r *http.Request) 
 	}
 	app.render(w, http.StatusOK, LayoutClean, "activate-account.html", data)
 
+}
+
+type signinForm struct {
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
+func (app *application) signin(w http.ResponseWriter, r *http.Request) {
+	form := signinForm{}
+	data := app.newTemplateData()
+	data.Form = form
+	app.render(w, http.StatusOK, LayoutClean, "signin.html", data)
+}
+
+func (app *application) signinPost(w http.ResponseWriter, r *http.Request) {
+
+	form := signinForm{}
+	form.Validator = *validator.New()
+
+	err := app.decodePostForm(r, &form)
+	if err != nil {
+		app.renderServerError(w, err)
+	}
+
+	data.ValidateEmail(&form.Validator, form.Email)
+	data.ValidatePasswordPlaintext(&form.Validator, form.Password)
+
+	if !form.Valid() {
+		data := app.newTemplateData()
+		data.Form = form
+		app.render(w, http.StatusOK, LayoutClean, "signin.html", data)
+		return
+	}
+
+	user, err := app.DB.User.GetByEmail(form.Email)
+	if err != nil {
+		form.AddFieldError("email", "email not found")
+	}
+
+	if !form.Valid() {
+		data := app.newTemplateData()
+		data.Form = form
+		app.render(w, http.StatusOK, LayoutClean, "signin.html", data)
+		return
+	}
+
+	passwordOk, err := user.Password.Matches(form.Password)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	if !passwordOk {
+		form.AddFieldError("password", "password not match")
+		data := app.newTemplateData()
+		data.Form = form
+		app.render(w, http.StatusOK, LayoutClean, "signin.html", data)
+		return
+	}
+
+	if !user.Activated {
+		form.AddFieldError("email", "User not activated")
+		data := app.newTemplateData()
+		data.Form = form
+		app.render(w, http.StatusOK, LayoutClean, "signin.html", data)
+		return
+	}
+
+	err = app.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	app.sessionManager.Put(r.Context(), session.SessionAuthenticatedUserID, user.ID)
+
+	http.Redirect(w, r, "/home", http.StatusSeeOther)
+}
+
+func (app *application) signout(w http.ResponseWriter, r *http.Request) {
+	err := app.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	app.sessionManager.Remove(r.Context(), session.SessionAuthenticatedUserID)
+	app.sessionManager.Put(r.Context(), session.SessionFlash, "You've been logged out succesfully")
+	http.Redirect(w, r, "/signin", http.StatusSeeOther)
 }

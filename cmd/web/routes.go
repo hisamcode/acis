@@ -19,17 +19,20 @@ func (app *application) routes() *http.ServeMux {
 	mux.Handle("POST /signin", dynamic.ThenFunc(app.signinPost))
 	mux.Handle("GET /signup", dynamic.ThenFunc(app.signup))
 	mux.Handle("POST /signup", dynamic.ThenFunc(app.signupPost))
+	mux.Handle("POST /signout", dynamic.ThenFunc(app.signout))
 	mux.Handle("GET /user/activated", dynamic.ThenFunc(app.activateAccount))
 
-	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home))
-	mux.Handle("GET /transaction/create", dynamic.ThenFunc(app.transactionCreate))
-	mux.Handle("POST /transaction", dynamic.ThenFunc(app.transactionPost))
-	mux.Handle("GET /categories", dynamic.ThenFunc(app.categories))
-	mux.Handle("GET /categories/{id}", dynamic.ThenFunc(app.categoriesView))
-	mux.Handle("GET /categories/create", dynamic.ThenFunc(app.categories))
-	mux.Handle("POST /categories", dynamic.ThenFunc(app.categoriesPost))
-	mux.Handle("GET /categories/{id}/edit", dynamic.ThenFunc(app.categoriesEdit))
-	mux.Handle("PUT /categories/{id}", dynamic.ThenFunc(app.categoriesPut))
+	protected := dynamic.Append(app.requireAuthentication)
+
+	mux.Handle("GET /home", protected.ThenFunc(app.home))
+	mux.Handle("GET /transaction/create", protected.ThenFunc(app.transactionCreate))
+	mux.Handle("POST /transaction", protected.ThenFunc(app.transactionPost))
+	mux.Handle("GET /categories", protected.ThenFunc(app.categories))
+	mux.Handle("GET /categories/{id}", protected.ThenFunc(app.categoriesView))
+	mux.Handle("GET /categories/create", protected.ThenFunc(app.categories))
+	mux.Handle("POST /categories", protected.ThenFunc(app.categoriesPost))
+	mux.Handle("GET /categories/{id}/edit", protected.ThenFunc(app.categoriesEdit))
+	mux.Handle("PUT /categories/{id}", protected.ThenFunc(app.categoriesPut))
 	return mux
 
 }

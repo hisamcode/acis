@@ -9,7 +9,12 @@ import (
 	"path/filepath"
 
 	"github.com/go-playground/form/v4"
+	"github.com/hisamcode/acis/internal/session"
 )
+
+func (app *application) isAuthenticated(r *http.Request) bool {
+	return app.sessionManager.Exists(r.Context(), session.SessionAuthenticatedUserID)
+}
 
 func (app *application) background(fn func()) {
 	app.wg.Add(1)
