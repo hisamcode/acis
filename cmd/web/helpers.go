@@ -11,15 +11,6 @@ import (
 	"github.com/go-playground/form/v4"
 )
 
-func (app *application) renderServerError(w http.ResponseWriter, err error) {
-	app.logger.Error(err.Error())
-	app.render(w, http.StatusInternalServerError, LayoutClean, "server-error.html", templateData{})
-}
-func (app *application) renderEditConflict(w http.ResponseWriter, err error) {
-	app.logger.Error(err.Error())
-	app.render(w, http.StatusConflict, LayoutClean, "edit-conflict.html", templateData{})
-}
-
 func (app *application) background(fn func()) {
 	app.wg.Add(1)
 	go func() {
@@ -44,6 +35,15 @@ const (
 // use on application.render()
 func (l LayoutBase) String() string {
 	return []string{"clean-base", "base"}[l]
+}
+
+func (app *application) renderServerError(w http.ResponseWriter, err error) {
+	app.logger.Error(err.Error())
+	app.render(w, http.StatusInternalServerError, LayoutClean, "server-error.html", templateData{})
+}
+func (app *application) renderEditConflict(w http.ResponseWriter, err error) {
+	app.logger.Error(err.Error())
+	app.render(w, http.StatusConflict, LayoutClean, "edit-conflict.html", templateData{})
 }
 
 func (app *application) render(w http.ResponseWriter, status int, base LayoutBase, page string, data templateData) {
