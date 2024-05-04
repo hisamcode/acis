@@ -98,6 +98,7 @@ func main() {
 	sessionManager.Store = postgresstore.New(db)
 	// automatically expire after 12 hours after first being created
 	sessionManager.Lifetime = 12 * time.Hour
+	sessionManager.Cookie.Persist = false
 
 	app := application{
 		config: cfg,

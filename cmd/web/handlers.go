@@ -191,6 +191,7 @@ func (app *application) activateAccount(w http.ResponseWriter, r *http.Request) 
 type signinForm struct {
 	Email               string `form:"email"`
 	Password            string `form:"password"`
+	RememberMe          bool   `form:"remember_me"`
 	validator.Validator `form:"-"`
 }
 
@@ -262,6 +263,9 @@ func (app *application) signinPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.sessionManager.Put(r.Context(), session.SessionAuthenticatedUserID, user.ID)
+	if form.RememberMe {
+		app.sessionManager.RememberMe(r.Context(), true)
+	}
 
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
