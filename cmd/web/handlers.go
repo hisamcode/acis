@@ -174,7 +174,7 @@ func (app *application) activateAccount(w http.ResponseWriter, r *http.Request) 
 		}
 
 		// TODO: message activation success
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
 
