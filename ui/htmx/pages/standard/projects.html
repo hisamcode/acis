@@ -3,16 +3,18 @@
 {{define "main"}}
 
 <div class="w-full p-4">
-  <a onclick="create_project.showModal()" class="btn  rounded-btn min-h-32 grid place-items-center">
-    <div class="text-center mb-2">
-      <div class="text-5xl">
-        +
+
+  <div hx-get="/projects/latest" hx-trigger="revealed" hx-target="this" class="insert-htmx-skeleton">
+    <span class="htmx-indicator">
+      <div class="flex flex-col gap-4 w-full my-4">
+        <div class="skeleton h-4 w-full"></div>
+        <div class="skeleton h-4 w-full"></div>
+        <div class="skeleton h-4 w-full"></div>
+        <div class="skeleton h-4 w-full"></div>
       </div>
-      <div class="text-sm">
-        Create Project
-      </div>
-    </div>
-  </a>
+    </span>
+  </div>
+
 </div>
 
 <!-- modals:logout -->

@@ -1,0 +1,48 @@
+{{define "partials"}}
+<div class="my-4 font-bold grid grid-cols-2 items-center">
+  <div class="text-xl ">
+    Projects
+  </div>
+  <div class="flex justify-end">
+    <button class="btn btn-primary" onclick="create_project.showModal()">Create</button>
+  </div>
+</div>
+<div class="">
+
+  {{if not .Projects }}
+  <a onclick="create_project.showModal()" class="btn  rounded-btn min-h-32 grid place-items-center">
+    <div class="text-center mb-2">
+      <div class="text-5xl">
+        +
+      </div>
+      <div class="text-sm">
+        <div>
+          You don't have project
+        </div>
+        <div>
+          Create One
+        </div>
+      </div>
+    </div>
+  </a>
+  {{end}}
+
+  <div class="divider"></div>
+  {{range .Projects}}
+  <div class="grid grid-cols-2 items-center mb-2">
+    <div>
+      <div class="text-lg">
+        {{.Name}}
+      </div>
+      <div class="text-sm">
+        {{.CreatedAt}}
+      </div>
+    </div>
+    <div class="flex justify-end">
+      <button class="btn">Open</button>
+    </div>
+  </div>
+  <div class="divider"></div>
+  {{end}}
+</div>
+{{end}}

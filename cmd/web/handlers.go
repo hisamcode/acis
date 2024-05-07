@@ -27,6 +27,18 @@ func (app *application) projects(w http.ResponseWriter, r *http.Request) {
 	data.Form = projectForm{}
 	app.render(w, http.StatusOK, LayoutStandard, "projects.html", data)
 }
+func (app *application) latestProjects(w http.ResponseWriter, r *http.Request) {
+
+	projects, err := app.DB.Project.LatestByUserID(app.userID)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Projects = projects
+	app.render(w, http.StatusOK, LayoutPartials, "latest-projects.html", data)
+}
 func (app *application) projectPost(w http.ResponseWriter, r *http.Request) {
 	var form projectForm
 	err := app.decodePostForm(r, &form)

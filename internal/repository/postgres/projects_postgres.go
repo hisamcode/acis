@@ -74,25 +74,26 @@ func (m ProjectModel) Get(id int) (*data.Project, error) {
 	return &project, nil
 }
 
-func (m ProjectModel) GetAll() ([]*data.Project, error) {
+func (m ProjectModel) LatestByUserID(userID int64) ([]data.Project, error) {
 
 	query := `
 	SELECT id, name, detail, created_at, version, user_id
 	FROM projects
-	ORDER BY id
+	WHERE user_id = $1
+	ORDER BY id DESC LIMIT 10
 	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	rows, err := m.DB.QueryContext(ctx, query)
+	rows, err := m.DB.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}
 
 	defer rows.Close()
 
-	projects := []*data.Project{}
+	projects := []data.Project{}
 
 	for rows.Next() {
 		var project data.Project
@@ -110,7 +111,7 @@ func (m ProjectModel) GetAll() ([]*data.Project, error) {
 			return nil, err
 		}
 
-		projects = append(projects, &project)
+		projects = append(projects, project)
 	}
 
 	if err = rows.Err(); err != nil {

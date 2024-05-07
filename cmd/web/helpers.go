@@ -44,11 +44,12 @@ type LayoutBase byte
 const (
 	LayoutClean LayoutBase = iota
 	LayoutStandard
+	LayoutPartials
 )
 
 // use on application.render()
 func (l LayoutBase) String() string {
-	return []string{"clean-base", "base"}[l]
+	return []string{"clean-base", "base", "partials"}[l]
 }
 
 func (app *application) renderServerError(w http.ResponseWriter, err error) {
@@ -74,6 +75,14 @@ func (app *application) render(w http.ResponseWriter, status int, base LayoutBas
 
 	if base == LayoutStandard {
 		ts, ok = app.templateCache.standard[page]
+		if !ok {
+			app.logger.Error("the template does not exist", "template", page)
+			return
+		}
+	}
+
+	if base == LayoutPartials {
+		ts, ok = app.templateCache.partials[page]
 		if !ok {
 			app.logger.Error("the template does not exist", "template", page)
 			return
@@ -112,6 +121,7 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 type templateCache struct {
 	clean    map[string]*template.Template
 	standard map[string]*template.Template
+	partials map[string]*template.Template
 }
 
 func newTemplateCache() (templateCache, error) {
@@ -125,9 +135,15 @@ func newTemplateCache() (templateCache, error) {
 		return templateCache{}, err
 	}
 
+	cachePartials, err := newTemplateCachePartials()
+	if err != nil {
+		return templateCache{}, err
+	}
+
 	return templateCache{
 		clean:    cacheClean,
 		standard: cacheStandard,
+		partials: cachePartials,
 	}, nil
 }
 
@@ -172,6 +188,31 @@ func newTemplateCacheStandard() (map[string]*template.Template, error) {
 		patterns := []string{
 			"./ui/htmx/bases/standard.html",
 			"./ui/htmx/bases/head.html",
+			page,
+		}
+
+		ts, err := template.New(name).ParseFiles(patterns...)
+		if err != nil {
+			return nil, err
+		}
+
+		cache[name] = ts
+	}
+
+	return cache, nil
+}
+func newTemplateCachePartials() (map[string]*template.Template, error) {
+	cache := map[string]*template.Template{}
+
+	pages, err := filepath.Glob("./ui/htmx/partials/*.html")
+	if err != nil {
+		return nil, err
+	}
+
+	for _, page := range pages {
+		name := filepath.Base(page)
+
+		patterns := []string{
 			page,
 		}
 

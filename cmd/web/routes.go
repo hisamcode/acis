@@ -27,6 +27,7 @@ func (app *application) routes() *http.ServeMux {
 	mux.Handle("GET /home", protected.ThenFunc(app.home))
 	mux.Handle("GET /projects", protected.ThenFunc(app.projects))
 	mux.Handle("POST /projects", protected.ThenFunc(app.projectPost))
+	mux.Handle("GET /projects/latest", protected.ThenFunc(app.latestProjects))
 	mux.Handle("GET /transaction/create", protected.ThenFunc(app.transactionCreate))
 	mux.Handle("POST /transaction", protected.ThenFunc(app.transactionPost))
 	mux.Handle("GET /categories", protected.ThenFunc(app.categories))
