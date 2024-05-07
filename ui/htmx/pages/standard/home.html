@@ -10,15 +10,10 @@
     </a>
   </div>
 
-  <div class="flex px-4">
-    <div>
-      <button class="btn btn-primary">Year</button>
-    </div>
-    <div class="grow">
-    </div>
-    <div>
-      <button class="btn btn-primary">Day</button>
-    </div>
+  <div role="tablist" class="tabs tabs-bordered my-6">
+    <a role="tab" class="tab">Year</a>
+    <a role="tab" class="tab tab-active">Month</a>
+    <a role="tab" class="tab">Day</a>
   </div>
 
   <div class="grid justify-items-center grid-cols-1 md:grid-cols-2 gap-2">
@@ -159,4 +154,11 @@
 </div>
 
 
+
+<script>
+  let params = new URL(document.location.toString()).searchParams
+  if (params.get("create-transaction") == 1) {
+    console.log('oke')
+  } 
+</script>
 {{end}}
