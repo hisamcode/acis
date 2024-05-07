@@ -8,12 +8,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var (
-	ErrDuplicateEmail = errors.New("duplicate email")
-	ErrRecordNotFound = errors.New("record not found")
-	ErrEditConflict   = errors.New("edit conflict")
-)
-
 // represent individual user
 type User struct {
 	ID          int64
@@ -73,15 +67,15 @@ func ValidateEmail(v *validator.Validator, email string) {
 // check password not empty and password >=8 and password <=72
 func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 	v.Check(password != "", "password", "password must be provided")
-	v.Check(len(password) >= 8, "password", "Password must be at least 8 bytes long")
-	v.Check(len(password) <= 72, "password", "Password must not be more than 72 bytes long")
+	v.Check(len(password) >= 8, "password", "Password must be at least 8 bytes/character long")
+	v.Check(len(password) <= 72, "password", "Password must not be more than 72 bytes/character long")
 }
 
 // check user.Name not empty and check length user.name <=500 bytes
 // and call ValidateEmail() and call ValidatePasswordPlaintext()
 func ValidateUser(v *validator.Validator, user *User) {
 	v.Check(user.Name != "", "name", "Name must be provided")
-	v.Check(len(user.Name) <= 500, "name", "Name must not be more than 500 bytes long")
+	v.Check(len(user.Name) <= 500, "name", "Name must not be more than 500 bytes/character long")
 
 	ValidateEmail(v, user.Email)
 
