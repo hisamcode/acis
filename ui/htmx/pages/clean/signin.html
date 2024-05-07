@@ -4,7 +4,7 @@
 <div class="flex justify-center w-full">
   <div class="w-full px-4 md:w-1/3 mt-4">
 
-    <div class="text-center text-lg">
+    <div class="text-center text-lg font-bold">
       Signin
     </div>
 
@@ -15,8 +15,8 @@
           <div class=" label">
             <span class="label-text">Email</span>
           </div>
-          <input type="text" name="email" value="{{.Form.Email}}" placeholder="Email"
-            class="input input-bordered w-full text-center" />
+          <input type="text" name="email" value="{{.Form.Email}}" placeholder="Email" class="input input-bordered focus:input-primary w-full text-center 
+           " />
           {{with .Form.FieldErrors.email}}
           <div class=" label">
             <span class="label-text text-warning">{{.}}</span>
@@ -30,20 +30,22 @@
           <div class=" label">
             <span class="label-text">Password</span>
           </div>
-          <input type="password" name="password" placeholder="Password"
-            class="input input-bordered w-full text-center" />
+          <input type="password" name="password" placeholder="Password" class="input input-bordered focus:input-primary w-full text-center
+          " />
           {{with .Form.FieldErrors.password}}
           <div class=" label">
             <span class="label-text text-warning">{{.}}</span>
           </div>
           {{end}}
+          <div class="label">
+            <a href="/forgot-password" class="label-text-alt link link-hover">Forgot password?</a>
+          </div>
         </label>
       </div>
 
 
       <div class="mt-2 grid grid-cols-2">
         <div>
-
         </div>
         <div class="form-control w-full">
           <label class="cursor-pointer label">
@@ -55,12 +57,19 @@
       </div>
 
       <div class="mt-6">
-        <button class="btn btn-primary w-full">Signin</button>
+        <button class="btn btn-primary w-full insert-htmx-loading">
+          Signin
+        </button>
+      </div>
+
+      <div class="text-center mt-4">
+        Don't have an account? <a href="/signup" class="link link-primary">Sign up for free</a>
       </div>
     </form>
 
 
   </div>
 </div>
+
 
 {{end}}
