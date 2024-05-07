@@ -12,8 +12,17 @@ import (
 	"github.com/hisamcode/acis/internal/session"
 )
 
-func (app *application) isAuthenticated(r *http.Request) bool {
-	return app.sessionManager.Exists(r.Context(), session.SessionAuthenticatedUserID)
+// execute event on client
+func (app *application) addHXTriggerAfterSettle(w http.ResponseWriter, eventName string) {
+	w.Header().Add("HX-Trigger-After-Settle", eventName)
+}
+
+func (app *application) isAuthenticated(r *http.Request) int64 {
+	// return app.sessionManager.Exists(r.Context(), session.SessionAuthenticatedUserID)
+	if !app.sessionManager.Exists(r.Context(), session.SessionAuthenticatedUserID) {
+		return -1
+	}
+	return app.sessionManager.GetInt64(r.Context(), session.SessionAuthenticatedUserID)
 }
 
 func (app *application) background(fn func()) {

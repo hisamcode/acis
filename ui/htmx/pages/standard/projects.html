@@ -1,0 +1,76 @@
+{{define "title"}} Projects {{end}}
+
+{{define "main"}}
+
+<div class="w-full p-4">
+  <a onclick="create_project.showModal()" class="btn  rounded-btn min-h-32 grid place-items-center">
+    <div class="text-center mb-2">
+      <div class="text-5xl">
+        +
+      </div>
+      <div class="text-sm">
+        Create Project
+      </div>
+    </div>
+  </a>
+</div>
+
+<!-- modals:logout -->
+<dialog id="create_project" class="modal modal-bottom sm:modal-middle">
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="font-bold text-lg">Create Project</h3>
+    <form method="POST" hx-post="/projects" hx-target="body" hx-push-url="true">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+      <div class="py-4">
+        <div class="mt-2">
+          <label class="form-control w-full">
+            <div class=" label">
+              <span class="label-text">Name</span>
+            </div>
+            <input type="text" name="name" value="{{.Form.Name}}" placeholder="Name"
+              class="input input-bordered focus:input-primary w-full" />
+            {{with .Form.FieldErrors.name}}
+            <div class=" label">
+              <span class="label-text text-warning">{{.}}</span>
+            </div>
+            {{end}}
+          </label>
+        </div>
+
+        <div class="mt-2">
+          <label class="form-control w-full">
+            <div class=" label">
+              <span class="label-text">Detail</span>
+            </div>
+            <textarea name="detail" class="textarea textarea-bordered focus:textarea-primary" placeholder="Detail"
+              rows="4"></textarea>
+            {{with .Form.FieldErrors.detail}}
+            <div class=" label">
+              <span class="label-text text-warning">{{.}}</span>
+            </div>
+            {{end}}
+          </label>
+        </div>
+
+      </div>
+      <div class="modal-action">
+        <button class="btn insert-htmx-loading">
+          Create
+        </button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<script>
+  document.body.addEventListener("validationCreateProject", function (evt) {
+    create_project.showModal()
+  }, { once: true })
+</script>
+{{end}}

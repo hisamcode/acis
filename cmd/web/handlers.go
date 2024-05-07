@@ -15,6 +15,50 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	app.render(w, http.StatusOK, LayoutStandard, "home.html", data)
 }
+
+type projectForm struct {
+	Name                string `form:"name"`
+	Detail              string `form:"detail"`
+	validator.Validator `form:"-"`
+}
+
+func (app *application) projects(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	data.Form = projectForm{}
+	app.render(w, http.StatusOK, LayoutStandard, "projects.html", data)
+}
+func (app *application) projectPost(w http.ResponseWriter, r *http.Request) {
+	var form projectForm
+	err := app.decodePostForm(r, &form)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	project := data.Project{
+		Name:   form.Name,
+		Detail: form.Detail,
+		UserID: app.userID,
+	}
+
+	form.Validator = *validator.New()
+	if data.ValidateProject(&form.Validator, &project); !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.addHXTriggerAfterSettle(w, "validationCreateProject")
+		app.render(w, http.StatusOK, LayoutStandard, "projects.html", data)
+		return
+	}
+
+	id, err := app.DB.Project.Insert(&project)
+	if err != nil {
+		app.renderServerError(w, err)
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/projects/%d", id), http.StatusSeeOther)
+
+}
+
 func (app *application) transactionCreate(w http.ResponseWriter, r *http.Request) {
 	app.render(w, http.StatusOK, LayoutClean, "transaction-create.html", templateData{})
 }

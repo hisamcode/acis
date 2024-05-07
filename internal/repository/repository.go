@@ -18,3 +18,9 @@ type TokenDatabaseRepoer interface {
 	Insert(token *data.Token) error
 	DeleteAllForUser(scope string, userID int64) error
 }
+
+type ProjectDatabaseRepoer interface {
+	Get(id int) (*data.Project, error)
+	GetAll() ([]*data.Project, error)
+	Insert(project *data.Project) (int64, error)
+}

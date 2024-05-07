@@ -42,8 +42,9 @@ type config struct {
 }
 
 type DB struct {
-	User  repository.UserDatabaseRepoer
-	Token repository.TokenDatabaseRepoer
+	User    repository.UserDatabaseRepoer
+	Token   repository.TokenDatabaseRepoer
+	Project repository.ProjectDatabaseRepoer
 }
 
 type application struct {
@@ -55,6 +56,7 @@ type application struct {
 	mailer         mailer.Mailer
 	wg             sync.WaitGroup
 	sessionManager *scs.SessionManager
+	userID         int64
 }
 
 func main() {
@@ -104,8 +106,9 @@ func main() {
 		config: cfg,
 		logger: logger,
 		DB: DB{
-			User:  postgres.UserModel{DB: db},
-			Token: postgres.TokenModel{DB: db},
+			User:    postgres.UserModel{DB: db},
+			Token:   postgres.TokenModel{DB: db},
+			Project: postgres.ProjectModel{DB: db},
 		},
 		templateCache:  templateCache,
 		formDecoder:    formDecoder,

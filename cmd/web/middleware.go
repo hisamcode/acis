@@ -8,10 +8,13 @@ import (
 
 func (app *application) requireAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !app.isAuthenticated(r) {
+		userID := app.isAuthenticated(r)
+		if userID == -1 {
 			http.Redirect(w, r, "/signin", http.StatusSeeOther)
 			return
 		}
+
+		app.userID = userID
 
 		// Otherwise set the "Cache-Control: no-store" header so that pages
 		// require authentication are not stored in the users browser cache (or
