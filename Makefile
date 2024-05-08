@@ -15,5 +15,8 @@ mc:
 mu: 
 	migrate -path=./migrations -database=postgres://acis:acis@localhost/acis?sslmode=disable up
 
+md: 
+	migrate -path=./migrations -database=postgres://acis:acis@localhost/acis?sslmode=disable down
+
 m:
 	migrate -path=./migrations -database=postgres://acis:acis@localhost/acis?sslmode=disable ${args}
