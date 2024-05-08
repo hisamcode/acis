@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/hisamcode/acis/internal/data"
+	"github.com/lib/pq"
 )
 
 type ProjectModel struct {
@@ -14,12 +15,15 @@ type ProjectModel struct {
 
 // insert with return id and error
 func (m ProjectModel) Insert(project *data.Project) (int64, error) {
+	if len(project.Categories) < 1 {
+		project.Categories = append(project.Categories, "empty;empty")
+	}
 	query := `
-	INSERT INTO projects (name, detail, user_id)
-	VALUES ($1, $2, $3) 
+	INSERT INTO projects (name, detail, categories, user_id)
+	VALUES ($1, $2, $3, $4) 
 	RETURNING id, created_at, version
 	`
-	args := []any{project.Name, project.Detail, project.UserID}
+	args := []any{project.Name, project.Detail, pq.Array(project.Categories), project.UserID}
 
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
@@ -43,7 +47,7 @@ func (m ProjectModel) Get(id int) (*data.Project, error) {
 	}
 
 	query := `
-	SELECT id, name, detail, created_at, version, user_id
+	SELECT id, name, detail, categories, created_at, version, user_id
 	FROM projects
 	WHERE id = $1
 	`
@@ -57,6 +61,7 @@ func (m ProjectModel) Get(id int) (*data.Project, error) {
 		&project.ID,
 		&project.Name,
 		&project.Detail,
+		pq.Array(&project.Categories),
 		&project.CreatedAt,
 		&project.Version,
 		&project.UserID,
@@ -77,7 +82,7 @@ func (m ProjectModel) Get(id int) (*data.Project, error) {
 func (m ProjectModel) LatestByUserID(userID int64) ([]data.Project, error) {
 
 	query := `
-	SELECT id, name, detail, created_at, version, user_id
+	SELECT id, name, detail, categories, created_at, version, user_id
 	FROM projects
 	WHERE user_id = $1
 	ORDER BY id DESC LIMIT 10
@@ -102,6 +107,7 @@ func (m ProjectModel) LatestByUserID(userID int64) ([]data.Project, error) {
 			&project.ID,
 			&project.Name,
 			&project.Detail,
+			pq.Array(&project.Categories),
 			&project.CreatedAt,
 			&project.Version,
 			&project.UserID,
