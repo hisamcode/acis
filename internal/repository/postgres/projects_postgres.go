@@ -40,7 +40,7 @@ func (m ProjectModel) Insert(project *data.Project) (int64, error) {
 	return project.ID, nil
 }
 
-func (m ProjectModel) Get(id int) (*data.Project, error) {
+func (m ProjectModel) Get(id int64) (*data.Project, error) {
 
 	if id < 1 {
 		return nil, data.ErrRecordNotFound

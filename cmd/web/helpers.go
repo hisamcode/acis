@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	"github.com/go-playground/form/v4"
 	"github.com/hisamcode/acis/internal/session"
@@ -45,11 +46,12 @@ const (
 	LayoutClean LayoutBase = iota
 	LayoutStandard
 	LayoutPartials
+	LayoutProject
 )
 
 // use on application.render()
 func (l LayoutBase) String() string {
-	return []string{"clean-base", "base", "partials"}[l]
+	return []string{"clean-base", "base", "partials", "project"}[l]
 }
 
 func (app *application) renderServerError(w http.ResponseWriter, err error) {
@@ -61,42 +63,44 @@ func (app *application) renderEditConflict(w http.ResponseWriter, err error) {
 	app.render(w, http.StatusConflict, LayoutClean, "edit-conflict.html", templateData{})
 }
 
-func (app *application) render(w http.ResponseWriter, status int, base LayoutBase, page string, data templateData) {
+func (app *application) render(w http.ResponseWriter, status int, base LayoutBase, page string, data templateData) error {
 	var ts *template.Template
 	var ok bool
 
-	if base == LayoutClean {
+	switch base {
+	case LayoutClean:
 		ts, ok = app.templateCache.clean[page]
 		if !ok {
-			app.logger.Error("the template does not exist", "template", page)
-			return
+			return fmt.Errorf("the template '%s' does not exist", page)
 		}
-	}
-
-	if base == LayoutStandard {
+	case LayoutStandard:
 		ts, ok = app.templateCache.standard[page]
 		if !ok {
-			app.logger.Error("the template does not exist", "template", page)
-			return
+			return fmt.Errorf("the template '%s' does not exist", page)
 		}
-	}
-
-	if base == LayoutPartials {
+	case LayoutPartials:
 		ts, ok = app.templateCache.partials[page]
 		if !ok {
-			app.logger.Error("the template does not exist", "template", page)
-			return
+			return fmt.Errorf("the template '%s' does not exist", page)
 		}
+	case LayoutProject:
+		ts, ok = app.templateCache.project[page]
+		if !ok {
+			return fmt.Errorf("the template '%s' does not exist", page)
+		}
+	default:
+		return fmt.Errorf("the template layout is required")
 	}
 
 	buf := new(bytes.Buffer)
 	err := ts.ExecuteTemplate(buf, base.String(), data)
 	if err != nil {
 		app.logger.Error(err.Error())
-		return
+		return nil
 	}
 	w.WriteHeader(status)
 	buf.WriteTo(w)
+	return nil
 }
 
 func (app *application) decodePostForm(r *http.Request, dst any) error {
@@ -122,6 +126,7 @@ type templateCache struct {
 	clean    map[string]*template.Template
 	standard map[string]*template.Template
 	partials map[string]*template.Template
+	project  map[string]*template.Template
 }
 
 func newTemplateCache() (templateCache, error) {
@@ -140,11 +145,26 @@ func newTemplateCache() (templateCache, error) {
 		return templateCache{}, err
 	}
 
+	cacheProject, err := newTemplateCacheProject()
+	if err != nil {
+		return templateCache{}, err
+	}
+
 	return templateCache{
 		clean:    cacheClean,
 		standard: cacheStandard,
 		partials: cachePartials,
+		project:  cacheProject,
 	}, nil
+}
+
+func humanDate(t time.Time) string {
+	// return t.Format("02 JAN 2006 at 15:04")
+	return t.Format(time.RFC822)
+}
+
+var functions = template.FuncMap{
+	"humanDate": humanDate,
 }
 
 func newTemplateCacheClean() (map[string]*template.Template, error) {
@@ -164,7 +184,7 @@ func newTemplateCacheClean() (map[string]*template.Template, error) {
 			page,
 		}
 
-		ts, err := template.New(name).ParseFiles(patterns...)
+		ts, err := template.New(name).Funcs(functions).ParseFiles(patterns...)
 		if err != nil {
 			return nil, err
 		}
@@ -191,7 +211,7 @@ func newTemplateCacheStandard() (map[string]*template.Template, error) {
 			page,
 		}
 
-		ts, err := template.New(name).ParseFiles(patterns...)
+		ts, err := template.New(name).Funcs(functions).ParseFiles(patterns...)
 		if err != nil {
 			return nil, err
 		}
@@ -216,7 +236,35 @@ func newTemplateCachePartials() (map[string]*template.Template, error) {
 			page,
 		}
 
-		ts, err := template.New(name).ParseFiles(patterns...)
+		ts, err := template.New(name).Funcs(functions).ParseFiles(patterns...)
+		if err != nil {
+			return nil, err
+		}
+
+		cache[name] = ts
+	}
+
+	return cache, nil
+}
+
+func newTemplateCacheProject() (map[string]*template.Template, error) {
+	cache := map[string]*template.Template{}
+
+	pages, err := filepath.Glob("./ui/htmx/pages/project/*.html")
+	if err != nil {
+		return nil, err
+	}
+
+	for _, page := range pages {
+		name := filepath.Base(page)
+
+		patterns := []string{
+			"./ui/htmx/bases/project.html",
+			"./ui/htmx/bases/head.html",
+			page,
+		}
+
+		ts, err := template.New(name).Funcs(functions).ParseFiles(patterns...)
 		if err != nil {
 			return nil, err
 		}

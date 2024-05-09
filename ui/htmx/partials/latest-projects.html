@@ -35,11 +35,12 @@
         {{.Name}}
       </div>
       <div class="text-sm">
-        {{.CreatedAt}}
+        <img src onerror="timeServerToClient('{{humanDate .CreatedAt}}', this.parentElement)">
+        {{humanDate .CreatedAt}}
       </div>
     </div>
-    <div class="flex justify-end">
-      <button class="btn">Open</button>
+    <div class="flex justify-end" hx-boost="true" hx-target="body">
+      <a class="btn" href="/projects/{{.ID}}/home">Open</a>
     </div>
   </div>
   <div class="divider"></div>

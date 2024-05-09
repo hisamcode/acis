@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/hisamcode/acis/internal/data"
@@ -39,6 +40,39 @@ func (app *application) latestProjects(w http.ResponseWriter, r *http.Request) {
 	data.Projects = projects
 	app.render(w, http.StatusOK, LayoutPartials, "latest-projects.html", data)
 }
+
+func (app *application) project(w http.ResponseWriter, r *http.Request) {
+	projectID, err := strconv.ParseInt(r.PathValue("projectID"), 10, 64)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+	project, err := app.DB.Project.Get(projectID)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+	data := app.newTemplateData(r)
+	data.Project = *project
+	app.render(w, http.StatusOK, LayoutProject, "home.html", data)
+}
+
+func (app *application) projectSetting(w http.ResponseWriter, r *http.Request) {
+	projectID, err := strconv.ParseInt(r.PathValue("projectID"), 10, 64)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+	project, err := app.DB.Project.Get(projectID)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+	data := app.newTemplateData(r)
+	data.Project = *project
+	app.render(w, http.StatusOK, LayoutProject, "setting.html", data)
+}
+
 func (app *application) projectPost(w http.ResponseWriter, r *http.Request) {
 	var form projectForm
 	err := app.decodePostForm(r, &form)

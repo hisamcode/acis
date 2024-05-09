@@ -20,7 +20,7 @@ type TokenDatabaseRepoer interface {
 }
 
 type ProjectDatabaseRepoer interface {
-	Get(id int) (*data.Project, error)
+	Get(id int64) (*data.Project, error)
 	LatestByUserID(userID int64) ([]data.Project, error)
 	Insert(project *data.Project) (int64, error)
 }
