@@ -92,18 +92,17 @@
           <!-- if there is a button in form, it will close the modal -->
           <button class="btn">No</button>
         </form>
-        </form>
         <form hx-post="/signout" hx-target="body" hx-push-url="true">
           <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
           <button class="btn insert-htmx-loading">
             Yes, Logout please..
           </button>
+        </form>
       </div>
     </div>
   </dialog>
 
-  <script>
-  </script>
+
 </body>
 
 </html>
