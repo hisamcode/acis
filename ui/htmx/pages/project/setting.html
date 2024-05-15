@@ -1,7 +1,60 @@
 {{define "title"}} Setting {{end}}
 
 {{define "main"}}
-<div>
-  test
+<div class="m-4">
+  <div>
+    <div class="flex">
+      <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+        width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+        <path
+          d="M10.83 5a3.001 3.001 0 0 0-5.66 0H4a1 1 0 1 0 0 2h1.17a3.001 3.001 0 0 0 5.66 0H20a1 1 0 1 0 0-2h-9.17ZM4 11h9.17a3.001 3.001 0 0 1 5.66 0H20a1 1 0 1 1 0 2h-1.17a3.001 3.001 0 0 1-5.66 0H4a1 1 0 1 1 0-2Zm1.17 6H4a1 1 0 1 0 0 2h1.17a3.001 3.001 0 0 0 5.66 0H20a1 1 0 1 0 0-2h-9.17a3.001 3.001 0 0 0-5.66 0Z" />
+      </svg>
+
+      <h1 class="text-lg ml-4">General</h1>
+    </div>
+    <form method="POST" hx-put="/projects/{{.Project.ID}}" hx-target="body" hx-push-url="true">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+      <div class="py-4">
+        <div class="mt-2">
+          <label class="form-control w-full">
+            <div class=" label">
+              <span class="label-text">Name</span>
+            </div>
+            <input type="text" name="name" value="{{.Form.Name}}" placeholder="Name"
+              class="input input-bordered focus:input-primary w-full" />
+            {{with .Form.FieldErrors.name}}
+            <div class=" label">
+              <span class="label-text text-warning">{{.}}</span>
+            </div>
+            {{end}}
+          </label>
+        </div>
+
+        <div class="mt-2">
+          <label class="form-control w-full">
+            <div class=" label">
+              <span class="label-text">Detail</span>
+            </div>
+            <textarea name="detail" class="textarea textarea-bordered focus:textarea-primary" placeholder="Detail"
+              rows="4">{{.Form.Detail}}</textarea>
+            {{with .Form.FieldErrors.detail}}
+            <div class=" label">
+              <span class="label-text text-warning">{{.}}</span>
+            </div>
+            {{end}}
+          </label>
+        </div>
+
+      </div>
+      <div class="modal-action">
+        <button class="btn w-full">
+          Update
+          <span class="loading loading-spinner htmx-indicator"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="divider"></div>
 </div>
 {{end}}

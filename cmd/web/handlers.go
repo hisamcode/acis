@@ -68,9 +68,65 @@ func (app *application) projectSetting(w http.ResponseWriter, r *http.Request) {
 		app.renderServerError(w, err)
 		return
 	}
+	pf := projectForm{
+		Name:   project.Name,
+		Detail: project.Detail,
+	}
 	data := app.newTemplateData(r)
 	data.Project = *project
+	data.Form = pf
 	app.render(w, http.StatusOK, LayoutProject, "setting.html", data)
+}
+
+func (app *application) projectSettingPut(w http.ResponseWriter, r *http.Request) {
+	projectID, err := strconv.ParseInt(r.PathValue("projectID"), 10, 64)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	var form projectForm
+	err = app.decodePostForm(r, &form)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	project, err := app.DB.Project.Get(projectID)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	if len(form.Name) > 0 {
+		project.Name = form.Name
+	}
+
+	if len(form.Detail) > 0 {
+		project.Detail = form.Detail
+	}
+
+	form.Validator = *validator.New()
+	if data.ValidateProject(&form.Validator, project); !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Project = *project
+		data.Form = form
+		app.render(w, http.StatusOK, LayoutProject, "setting.html", data)
+		return
+	}
+
+	err = app.DB.Project.Update(project)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrEditConflict):
+			app.renderEditConflict(w, err)
+		default:
+			app.renderServerError(w, err)
+		}
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/projects/%d/settings", projectID), http.StatusSeeOther)
 }
 
 func (app *application) projectPost(w http.ResponseWriter, r *http.Request) {

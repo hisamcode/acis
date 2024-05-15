@@ -127,3 +127,38 @@ func (m ProjectModel) LatestByUserID(userID int64) ([]data.Project, error) {
 	return projects, nil
 
 }
+
+func (m ProjectModel) Update(project *data.Project) error {
+	query := `
+	UPDATE projects
+	SET name = $1, detail = $2, categories = $3, user_id = $4, version = version + 1
+	WHERE id = $5 AND version = $6
+	returning version
+	`
+
+	args := []any{
+		project.Name,
+		project.Detail,
+		pq.Array(project.Categories),
+		project.UserID,
+		project.ID,
+		project.Version,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	// Execute the sql query, if no matching row could be found, we know the project
+	// version has changed (or the record has been deleted) and we return error
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&project.Version)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return data.ErrEditConflict
+		default:
+			return err
+		}
+	}
+
+	return nil
+}
