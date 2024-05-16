@@ -157,8 +157,7 @@ func (app *application) projectPost(w http.ResponseWriter, r *http.Request) {
 		app.renderServerError(w, err)
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/projects/%d", id), http.StatusSeeOther)
-
+	http.Redirect(w, r, fmt.Sprintf("/projects/%d/home", id), http.StatusSeeOther)
 }
 
 func (app *application) transactionCreate(w http.ResponseWriter, r *http.Request) {
