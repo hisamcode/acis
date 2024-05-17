@@ -81,12 +81,13 @@ func (app *application) projectSetting(w http.ResponseWriter, r *http.Request) {
 		app.renderServerError(w, err)
 		return
 	}
-	// pf := projectForm{
-	// 	Name:   project.Name,
-	// 	Detail: project.Detail,
-	// }
 
-	pf := projectTransactionForm{}
+	pf := projectTransactionForm{
+		Project: projectForm{
+			Name:   project.Name,
+			Detail: project.Detail,
+		},
+	}
 
 	data := app.newTemplateData(r)
 	data.Project = *project
