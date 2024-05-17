@@ -15,15 +15,20 @@ type ProjectModel struct {
 
 // insert with return id and error
 func (m ProjectModel) Insert(project *data.Project) (int64, error) {
-	if len(project.Categories) < 1 {
-		project.Categories = append(project.Categories, "empty;empty")
+	if len(project.WTS) < 1 {
+		project.WTS = append(project.WTS, "empty;empty;empty")
 	}
+
+	if len(project.Emojis) < 1 {
+		project.Emojis = append(project.Emojis, "empty;empty;empty")
+	}
+
 	query := `
-	INSERT INTO projects (name, detail, categories, user_id)
-	VALUES ($1, $2, $3, $4) 
+	INSERT INTO projects (name, detail, wts, emojis, user_id)
+	VALUES ($1, $2, $3, $4, $5) 
 	RETURNING id, created_at, version
 	`
-	args := []any{project.Name, project.Detail, pq.Array(project.Categories), project.UserID}
+	args := []any{project.Name, project.Detail, pq.Array(project.WTS), pq.Array(project.Emojis), project.UserID}
 
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
@@ -47,7 +52,7 @@ func (m ProjectModel) Get(id int64) (*data.Project, error) {
 	}
 
 	query := `
-	SELECT id, name, detail, categories, created_at, version, user_id
+	SELECT id, name, detail, wts, emojis, created_at, version, user_id
 	FROM projects
 	WHERE id = $1
 	`
@@ -61,7 +66,8 @@ func (m ProjectModel) Get(id int64) (*data.Project, error) {
 		&project.ID,
 		&project.Name,
 		&project.Detail,
-		pq.Array(&project.Categories),
+		pq.Array(&project.WTS),
+		pq.Array(&project.Emojis),
 		&project.CreatedAt,
 		&project.Version,
 		&project.UserID,
@@ -82,7 +88,7 @@ func (m ProjectModel) Get(id int64) (*data.Project, error) {
 func (m ProjectModel) LatestByUserID(userID int64) ([]data.Project, error) {
 
 	query := `
-	SELECT id, name, detail, categories, created_at, version, user_id
+	SELECT id, name, detail, wts, emojis, created_at, version, user_id
 	FROM projects
 	WHERE user_id = $1
 	ORDER BY id DESC LIMIT 10
@@ -107,7 +113,8 @@ func (m ProjectModel) LatestByUserID(userID int64) ([]data.Project, error) {
 			&project.ID,
 			&project.Name,
 			&project.Detail,
-			pq.Array(&project.Categories),
+			pq.Array(&project.WTS),
+			pq.Array(&project.Emojis),
 			&project.CreatedAt,
 			&project.Version,
 			&project.UserID,
@@ -131,15 +138,16 @@ func (m ProjectModel) LatestByUserID(userID int64) ([]data.Project, error) {
 func (m ProjectModel) Update(project *data.Project) error {
 	query := `
 	UPDATE projects
-	SET name = $1, detail = $2, categories = $3, user_id = $4, version = version + 1
-	WHERE id = $5 AND version = $6
+	SET name = $1, detail = $2, wts = $3, emojis = $4, user_id = $5, version = version + 1
+	WHERE id = $6 AND version = $7
 	returning version
 	`
 
 	args := []any{
 		project.Name,
 		project.Detail,
-		pq.Array(project.Categories),
+		pq.Array(project.WTS),
+		pq.Array(project.Emojis),
 		project.UserID,
 		project.ID,
 		project.Version,

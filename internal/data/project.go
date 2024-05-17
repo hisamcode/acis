@@ -11,10 +11,10 @@ type Project struct {
 	CreatedAt time.Time
 	Name      string
 	Detail    string
-	// {emoji,name}
-	Categories []string
-	Version    int
-	UserID     int64
+	WTS       []string
+	Emojis    []string
+	Version   int
+	UserID    int64
 }
 
 func ValidateProject(v *validator.Validator, project *Project) {
