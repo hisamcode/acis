@@ -41,6 +41,12 @@ func (app *application) latestProjects(w http.ResponseWriter, r *http.Request) {
 	app.render(w, http.StatusOK, LayoutPartials, "latest-projects.html", data)
 }
 
+type transactionForm struct {
+	Nominal             float64 `form:"nominal"`
+	Detail              string  `form:"detail"`
+	validator.Validator `form:"-"`
+}
+
 func (app *application) project(w http.ResponseWriter, r *http.Request) {
 	projectID, err := strconv.ParseInt(r.PathValue("projectID"), 10, 64)
 	if err != nil {
@@ -54,7 +60,14 @@ func (app *application) project(w http.ResponseWriter, r *http.Request) {
 	}
 	data := app.newTemplateData(r)
 	data.Project = *project
+	data.Form = transactionForm{}
 	app.render(w, http.StatusOK, LayoutProject, "home.html", data)
+}
+
+type projectTransactionForm struct {
+	transactionForm
+	// projectForm for update on page setting
+	Project projectForm
 }
 
 func (app *application) projectSetting(w http.ResponseWriter, r *http.Request) {
@@ -68,10 +81,13 @@ func (app *application) projectSetting(w http.ResponseWriter, r *http.Request) {
 		app.renderServerError(w, err)
 		return
 	}
-	pf := projectForm{
-		Name:   project.Name,
-		Detail: project.Detail,
-	}
+	// pf := projectForm{
+	// 	Name:   project.Name,
+	// 	Detail: project.Detail,
+	// }
+
+	pf := projectTransactionForm{}
+
 	data := app.newTemplateData(r)
 	data.Project = *project
 	data.Form = pf

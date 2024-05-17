@@ -20,9 +20,9 @@
             <div class=" label">
               <span class="label-text">Name</span>
             </div>
-            <input type="text" name="name" value="{{.Form.Name}}" placeholder="Name"
+            <input type="text" name="name" value="{{.Form.Project.Name}}" placeholder="Name"
               class="input input-bordered focus:input-primary w-full" />
-            {{with .Form.FieldErrors.name}}
+            {{with .Form.Project.FieldErrors.name}}
             <div class=" label">
               <span class="label-text text-warning">{{.}}</span>
             </div>
@@ -36,8 +36,8 @@
               <span class="label-text">Detail</span>
             </div>
             <textarea name="detail" class="textarea textarea-bordered focus:textarea-primary" placeholder="Detail"
-              rows="4">{{.Form.Detail}}</textarea>
-            {{with .Form.FieldErrors.detail}}
+              rows="4">{{.Form.Project.Detail}}</textarea>
+            {{with .Form.Project.FieldErrors.detail}}
             <div class=" label">
               <span class="label-text text-warning">{{.}}</span>
             </div>

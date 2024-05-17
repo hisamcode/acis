@@ -78,7 +78,7 @@
       <span class="btm-nav-label text-sm">Home</span>
       <span class="loading loading-dots loading-xs htmx-indicator"></span>
     </a>
-    <button id="btn-project-create">
+    <button id="btn-project-create" onclick="create_transaction.showModal()">
       <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
         viewBox="0 0 24 24">
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -105,6 +105,60 @@
       Powered by GO
     </div>
   </footer>
+
+  <!-- modals:create transaction -->
+  <dialog id="create_transaction" class="modal modal-bottom sm:modal-middle">
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+    <div class="modal-box">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      </form>
+      <h3 class="font-bold text-lg">Create Transaction</h3>
+      <form method="POST" hx-post="/transactions" hx-target="body" hx-push-url="true">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+        <div class="py-4">
+          <div class="mt-2">
+            <label class="form-control w-full">
+              <div class=" label">
+                <span class="label-text">Nominal</span>
+              </div>
+              <input type="number" name="nominal" value="{{.Form.Nominal}}" placeholder="Nominal"
+                class="input input-bordered focus:input-primary w-full" />
+              {{with .Form.FieldErrors.nominal}}
+              <div class=" label">
+                <span class="label-text text-warning">{{.}}</span>
+              </div>
+              {{end}}
+            </label>
+          </div>
+
+          <div class="mt-2">
+            <label class="form-control w-full">
+              <div class=" label">
+                <span class="label-text">Detail</span>
+              </div>
+              <textarea name="detail" class="textarea textarea-bordered focus:textarea-primary" placeholder="Detail"
+                rows="4">{{.Form.Detail}}</textarea>
+              {{with .Form.FieldErrors.detail}}
+              <div class=" label">
+                <span class="label-text text-warning">{{.}}</span>
+              </div>
+              {{end}}
+            </label>
+          </div>
+
+        </div>
+        <div class="modal-action">
+          <button class="btn">
+            Create
+            <span class="loading loading-spinner htmx-indicator"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </dialog>
 
   <!-- modals:logout -->
   <dialog id="logout_modal" class="modal modal-bottom sm:modal-middle">
