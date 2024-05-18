@@ -116,7 +116,7 @@
         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <h3 class="font-bold text-lg">Create Transaction</h3>
-      <form method="POST" hx-post="/transactions" hx-target="body" hx-push-url="true">
+      <form method="POST" hx-post="/projects/{{.Project.ID}}/transaction" hx-target="body" hx-push-url="true">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <div class="py-4">
           <div class="mt-2">

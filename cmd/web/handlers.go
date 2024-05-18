@@ -44,6 +44,8 @@ func (app *application) latestProjects(w http.ResponseWriter, r *http.Request) {
 type transactionForm struct {
 	Nominal             float64 `form:"nominal"`
 	Detail              string  `form:"detail"`
+	WTSID               int8    `form:"wts_id"`
+	EmojiID             string  `form:"emoji_id"`
 	validator.Validator `form:"-"`
 }
 
@@ -62,6 +64,71 @@ func (app *application) project(w http.ResponseWriter, r *http.Request) {
 	data.Project = *project
 	data.Form = transactionForm{}
 	app.render(w, http.StatusOK, LayoutProject, "home.html", data)
+}
+
+func (app *application) projectTransactionPost(w http.ResponseWriter, r *http.Request) {
+
+	// validation
+	form := transactionForm{}
+	err := app.decodePostForm(r, &form)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	transaction := data.Transaction{
+		Nominal: form.Nominal,
+		Detail:  form.Detail,
+		WTSID:   1,
+	}
+
+	if len(form.EmojiID) > 0 {
+		emoji := data.Emoji{}
+		err = emoji.Decode(form.EmojiID)
+		if err != nil {
+			app.renderServerError(w, err)
+			return
+		}
+		transaction.EmojiID = emoji
+	} else {
+		transaction.EmojiID = data.Emoji{
+			ID:    "empty",
+			Name:  "empty",
+			Emoji: "empty",
+		}
+	}
+
+	form.Validator = *validator.New()
+	if data.ValidateTransaction(&form.Validator, &transaction); !form.Validator.Valid() {
+		project, err := app.getProject(r)
+		if err != nil {
+			app.renderServerError(w, err)
+			return
+		}
+		data := app.newTemplateData(r)
+		data.Form = form
+		data.Project = *project
+		app.addHXTriggerAfterSettle(w, "validationCreateTransaction")
+		app.render(w, http.StatusOK, LayoutProject, "home.html", data)
+		return
+	}
+
+	project, err := app.getProject(r)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	transaction.ProjectID = project.ID
+	transaction.CreatedBy = app.userID
+
+	err = app.DB.Transaction.Insert(&transaction)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/projects/%d/home", project.ID), http.StatusSeeOther)
 }
 
 type projectTransactionForm struct {

@@ -42,9 +42,10 @@ type config struct {
 }
 
 type DB struct {
-	User    repository.UserDatabaseRepoer
-	Token   repository.TokenDatabaseRepoer
-	Project repository.ProjectDatabaseRepoer
+	User        repository.UserDatabaseRepoer
+	Token       repository.TokenDatabaseRepoer
+	Project     repository.ProjectDatabaseRepoer
+	Transaction repository.TransactionDatabaseRepoer
 }
 
 type application struct {
@@ -106,9 +107,10 @@ func main() {
 		config: cfg,
 		logger: logger,
 		DB: DB{
-			User:    postgres.UserModel{DB: db},
-			Token:   postgres.TokenModel{DB: db},
-			Project: postgres.ProjectModel{DB: db},
+			User:        postgres.UserModel{DB: db},
+			Token:       postgres.TokenModel{DB: db},
+			Project:     postgres.ProjectModel{DB: db},
+			Transaction: postgres.TransactionModel{DB: db},
 		},
 		templateCache:  templateCache,
 		formDecoder:    formDecoder,

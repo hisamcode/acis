@@ -7,11 +7,27 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/go-playground/form/v4"
+	"github.com/hisamcode/acis/internal/data"
 	"github.com/hisamcode/acis/internal/session"
 )
+
+func (app *application) getProject(r *http.Request) (*data.Project, error) {
+	projectID, err := strconv.ParseInt(r.PathValue("projectID"), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	project, err := app.DB.Project.Get(projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return project, nil
+}
 
 // execute event on client
 func (app *application) addHXTriggerAfterSettle(w http.ResponseWriter, eventName string) {

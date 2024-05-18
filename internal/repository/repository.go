@@ -25,3 +25,7 @@ type ProjectDatabaseRepoer interface {
 	Insert(project *data.Project) (int64, error)
 	Update(project *data.Project) error
 }
+
+type TransactionDatabaseRepoer interface {
+	Insert(transaction *data.Transaction) error
+}

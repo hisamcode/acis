@@ -6,11 +6,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hisamcode/acis/internal/validator"
 	"github.com/rs/xid"
 )
 
 // based on xid
 type Emoji struct {
+	ID        string
 	Name      string
 	Emoji     string
 	CreatedAt time.Time
@@ -19,7 +21,7 @@ type Emoji struct {
 }
 
 func (e *Emoji) Encode() string {
-	return fmt.Sprintf("%s;%s;%s", xid.New().String(), e.Emoji, e.Name)
+	return fmt.Sprintf("%s;%s;%s", e.ID, e.Emoji, e.Name)
 }
 
 func (e *Emoji) Decode(encodedString string) error {
@@ -54,4 +56,9 @@ type Transaction struct {
 	Version   int
 	ProjectID int64
 	CreatedBy int64
+}
+
+func ValidateTransaction(v *validator.Validator, transaction *Transaction) {
+	limit := 1_000_000_000_000
+	v.Check(int(transaction.Nominal) < limit, "nominal", fmt.Sprintf("nominal must be more than %d", limit))
 }
