@@ -15,5 +15,7 @@ require (
 	github.com/justinas/alice v1.2.0 // indirect
 	github.com/justinas/nosurf v1.1.1 // indirect
 	github.com/rs/xid v1.5.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
+	go.uber.org/zap v1.27.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 )

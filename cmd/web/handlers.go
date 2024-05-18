@@ -10,6 +10,7 @@ import (
 	"github.com/hisamcode/acis/internal/data"
 	"github.com/hisamcode/acis/internal/session"
 	"github.com/hisamcode/acis/internal/validator"
+	"go.uber.org/zap"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -338,7 +339,7 @@ func (app *application) signupPost(w http.ResponseWriter, r *http.Request) {
 			"userID":          user.ID,
 			"link":            app.config.host,
 		}
-		app.logger.Info("Send email activation", "email", user.Email)
+		app.logger.Info("Send email activation", zap.String("email", user.Email))
 		err = app.mailer.Send(user.Email, "user_welcome.html", data)
 		if err != nil {
 			app.logger.Error(err.Error())

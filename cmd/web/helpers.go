@@ -13,6 +13,7 @@ import (
 	"github.com/go-playground/form/v4"
 	"github.com/hisamcode/acis/internal/data"
 	"github.com/hisamcode/acis/internal/session"
+	"go.uber.org/zap"
 )
 
 func (app *application) getProject(r *http.Request) (*data.Project, error) {
@@ -71,7 +72,7 @@ func (l LayoutBase) String() string {
 }
 
 func (app *application) renderServerError(w http.ResponseWriter, err error) {
-	app.logger.Error(err.Error())
+	app.logger.WithOptions(zap.AddCallerSkip(1)).Error(err.Error())
 	app.render(w, http.StatusInternalServerError, LayoutClean, "server-error.html", templateData{})
 }
 func (app *application) renderEditConflict(w http.ResponseWriter, err error) {

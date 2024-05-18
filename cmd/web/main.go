@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"flag"
-	"log/slog"
 	"os"
 	"sync"
 	"time"
@@ -16,6 +15,7 @@ import (
 	"github.com/hisamcode/acis/internal/repository"
 	"github.com/hisamcode/acis/internal/repository/postgres"
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 const (
@@ -50,7 +50,7 @@ type DB struct {
 
 type application struct {
 	config         config
-	logger         *slog.Logger
+	logger         *zap.Logger
 	DB             DB
 	templateCache  templateCache
 	formDecoder    *form.Decoder
@@ -77,9 +77,14 @@ func main() {
 
 	flag.Parse()
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource: true,
-	}))
+	// logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	// 	AddSource: true,
+	// }))
+	logger, err := zap.NewProduction()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
 
 	db, err := openDB(cfg)
 	if err != nil {
