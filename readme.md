@@ -1,4 +1,21 @@
 
+TODO:
+- decoupling handlers
+- create emojis
+- list emojis
+- update emojis
+- delete emojis
+- update emojis
+- list transaction
+- update transaction
+- delete transaction
+- report in daily
+- report in monthly
+- report in yearly
+- navigate to next day and prev day
+- navigate to next month and prev month
+- navigate to next year and prev year
+
 user
 id | avatar | name | email | password
 
@@ -12,13 +29,13 @@ id | name | unicode
 1  | Gas  | ⛽
 
 transactions
-id | user_id  | nominal | wts_id | category_id | date | detail
-1  |     1    | 20.000  | 1      | 1           |      | 
+id | project_id  | nominal | wts_id | emoji_index | date | detail
+1  |     1       | 20.000  | 1      | 1           |      | 
 
 misal
 setiap insert transaction, increment category[3]
 projects
-id, projects, categories text[][gas, ⛽, 4], version(optimistic)
+id, projects, categories text[gas ;@;⛽], version(optimistic)
 transactions
 id, project_id, 
 
@@ -69,3 +86,7 @@ transaction per month, day, year?
 ```
 curl -X POST localhost:8000/signup -H "Content-Type: application/x-www-form-urlencoded" -d "name=test&email=test1@test.com&password=123123123&repeat_password=123123123" && windows-kill -SIGINT 13716
 ```
+
+security header csp
+
+if use dialog element, dont use class insert-htmx-loading
