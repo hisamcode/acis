@@ -1,16 +1,16 @@
 {{ define "title" }} Home {{end}}
 
 {{define "main"}}
-<div class="relative">
-  <div class="fixed right-2 md:right-1/4 bottom-4 z-10 ">
+<div class="relative mb-16">
+  <!-- <div class="fixed right-2 md:right-1/4 bottom-4 z-10 ">
     <a href="/transaction/create" hx-get="/transaction/create" hx-push-url="true" hx-target="body"
       class="btn btn-lg btn-circle btn-active btn-primary">
       +
       <span class="loading loading-spinner htmx-indicator absolute"></span>
     </a>
-  </div>
+  </div> -->
 
-  <div role="tablist" class="tabs tabs-bordered my-6">
+  <div role="tablist" class="tabs tabs-bordered my-6 sticky top-0">
     <a role="tab" class="tab">Year</a>
     <a role="tab" class="tab tab-active">Month</a>
     <a role="tab" class="tab">Day</a>
@@ -152,13 +152,4 @@
     </table>
   </div>
 </div>
-
-
-
-<script>
-  let params = new URL(document.location.toString()).searchParams
-  if (params.get("create-transaction") == 1) {
-    console.log('oke')
-  } 
-</script>
 {{end}}
