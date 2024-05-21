@@ -24,11 +24,7 @@
             </div>
             <input type="text" name="emoji_name" value="{{.Form.Emoji.Name}}" placeholder="Name"
               class="input input-bordered focus:input-primary w-full" />
-            {{with .Form.Emoji.FieldErrors.name}}
-            <div class=" label">
-              <span class="label-text text-warning">{{.}}</span>
-            </div>
-            {{end}}
+            <div class="validation_error label" id="create_emoji_name_error"></div>
           </label>
         </div>
 
@@ -39,11 +35,7 @@
             </div>
             <input type="text" name="emoji" class="textarea textarea-bordered focus:textarea-primary"
               placeholder="Detail">{{.Form.Emoji.Emoji}}</input>
-            {{with .Form.Emoji.FieldErrors.emoji}}
-            <div class=" label">
-              <span class="label-text text-warning">{{.}}</span>
-            </div>
-            {{end}}
+            <div class="validation_error label" id="create_emoji_error"></div>
           </label>
         </div>
       </div>
@@ -153,6 +145,7 @@
             </div>
             <input type="text" id="emoji_modal_name" name="emoji_name" placeholder="name"
               class="input input-bordered focus:input-primary w-full" />
+            <div class="validation_error label" id="update_emoji_name_error"></div>
           </label>
         </div>
         <div class="mt-2">
@@ -162,6 +155,7 @@
             </div>
             <input type="text" id="emoji_modal_emoji" name="emoji" placeholder="Emoji"
               class="input input-bordered focus:input-primary w-full" />
+            <div class="validation_error label" id="update_emoji_error"></div>
           </label>
         </div>
       </div>
@@ -208,6 +202,8 @@
     </div>
   </div>
 </dialog>
+
+
 <script>
   // document.body.addEventListener('htmx:beforeOnLoad', function (evt) {
   //   if (evt.detail.xhr.status === 422) {

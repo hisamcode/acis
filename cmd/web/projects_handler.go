@@ -129,6 +129,10 @@ type emojiForm struct {
 	ID    string `form:"emoji_id"`
 	Name  string `form:"emoji_name"`
 	Emoji string `form:"emoji"`
+	// dipake di file partials/form-validation.html buat ngebedain, kalo
+	// ga pake nanti bakal keluar error validasinya(both) 2 2 nya, kalo
+	// misalkan ada lebih dari 1 form yang pake validasi oob
+	PrefixValidation string
 	validator.Validator
 }
 
@@ -156,9 +160,10 @@ func (app *application) projectEmojiPut(w http.ResponseWriter, r *http.Request) 
 	form.Validator = *validator.New()
 	if data.ValidateEmoji(&form.Validator, &emoji); !form.Valid() {
 		data := app.newTemplateData(r)
+		form.PrefixValidation = "update"
 		data.Form = form
-		app.addHXReswap(w, HXSWAP_INNER)
-		app.render(w, http.StatusUnprocessableEntity, LayoutPartials, "validation-error.html", data)
+		app.addHXReswap(w, HXSWAP_NONE)
+		app.render(w, http.StatusUnprocessableEntity, LayoutPartials, "form-validation.html", data)
 		return
 	}
 
@@ -176,6 +181,7 @@ func (app *application) projectEmojiPut(w http.ResponseWriter, r *http.Request) 
 
 	data := app.newTemplateData(r)
 	data.Project = *project
+	app.addHXTrigger(w, "clearValidation,toastUpdateSuccess")
 	app.render(w, http.StatusOK, LayoutPartials, "list-emojis.html", data)
 }
 
@@ -199,8 +205,10 @@ func (app *application) projectEmojiPost(w http.ResponseWriter, r *http.Request)
 	form.Validator = *validator.New()
 	if data.ValidateEmoji(&form.Validator, &emoji); !form.Valid() {
 		data := app.newTemplateData(r)
+		form.PrefixValidation = "create"
 		data.Form = form
-		app.render(w, http.StatusUnprocessableEntity, LayoutPartials, "validation-error.html", data)
+		app.addHXReswap(w, HXSWAP_NONE)
+		app.render(w, http.StatusOK, LayoutPartials, "form-validation.html", data)
 		return
 	}
 
@@ -214,6 +222,7 @@ func (app *application) projectEmojiPost(w http.ResponseWriter, r *http.Request)
 
 	data := app.newTemplateData(r)
 	data.Project = *project
+	app.addHXTrigger(w, "clearValidation,toastCreateSuccess")
 	app.render(w, http.StatusOK, LayoutPartials, "list-emojis.html", data)
 }
 
@@ -249,6 +258,7 @@ func (app *application) projectEmojiDelete(w http.ResponseWriter, r *http.Reques
 
 	data := app.newTemplateData(r)
 	data.Project = *project
+	app.addHXTrigger(w, "toastDeleteSuccess")
 	app.render(w, http.StatusOK, LayoutPartials, "list-emojis.html", data)
 }
 
