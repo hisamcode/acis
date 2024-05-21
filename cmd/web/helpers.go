@@ -36,14 +36,20 @@ func (app *application) addHXTriggerAfterSettle(w http.ResponseWriter, eventName
 
 }
 
+func (app *application) addHXTrigger(w http.ResponseWriter, eventName string) {
+	w.Header().Add("HX-Trigger", eventName)
+
+}
+
 type hxswap uint8
 
 const (
 	HXSWAP_INNER hxswap = iota
+	HXSWAP_NONE  hxswap = iota
 )
 
 func (h hxswap) String() string {
-	return []string{"innerHTML"}[h]
+	return []string{"innerHTML", "none"}[h]
 }
 
 func (app *application) addHXReswap(w http.ResponseWriter, swap hxswap) {

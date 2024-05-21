@@ -35,6 +35,17 @@ htmx.onLoad(function (content) {
     }
   }
 
+  document.body.addEventListener("clearValidation", function (evt) {
+    let validationErrors = document.getElementsByClassName("validation_error")
+    for (let i = 0; i < validationErrors.length; i++) {
+      let validationError = validationErrors[i]
+      let span = validationError.getElementsByTagName("span")
+      if (span.length > 0) {
+        span[0].remove()
+      }
+    }
+
+  })
   // var elementHtmxLoading = content.getElementsByClassName("insert-htmx-loading-dots")
   // if (elementHtmxLoading.length > 0) {
   //   var spanhtmxindicator = createSpanHtmxIndicatorDots()
@@ -89,4 +100,5 @@ document.addEventListener('htmx:afterRequest', function (evt) {
     }
   }
 });
+
 
