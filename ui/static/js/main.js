@@ -70,3 +70,23 @@ function timeServerToClient(timeStr, el) {
   })
   el.innerHTML = date
 }
+
+document.addEventListener('htmx:afterRequest', function (evt) {
+  if (evt.detail.xhr.status == 404) {
+    /* Notify the user of a 404 Not Found response */
+    return alert("Error: Could Not Find Resource");
+  }
+  if (evt.detail.successful != true) {
+    /* Notify of an unexpected error, & print error to console */
+    alert("Unexpected Error");
+    return console.error(evt);
+  }
+  if (evt.detail.target.id == 'list_emoji') {
+    if (evt.detail.successful == true) {
+      form_emoji_create.reset()
+      emoji_modal.close()
+      emoji_modal_delete.close()
+    }
+  }
+});
+
