@@ -181,7 +181,7 @@ func (app *application) projectEmojiPut(w http.ResponseWriter, r *http.Request) 
 
 	data := app.newTemplateData(r)
 	data.Project = *project
-	app.addHXTrigger(w, "clearValidation")
+	app.addHXTrigger(w, "clearValidation,toastUpdateSuccess")
 	app.render(w, http.StatusOK, LayoutPartials, "list-emojis.html", data)
 }
 
@@ -222,7 +222,7 @@ func (app *application) projectEmojiPost(w http.ResponseWriter, r *http.Request)
 
 	data := app.newTemplateData(r)
 	data.Project = *project
-	app.addHXTrigger(w, "clearValidation")
+	app.addHXTrigger(w, "clearValidation,toastCreateSuccess")
 	app.render(w, http.StatusOK, LayoutPartials, "list-emojis.html", data)
 }
 
@@ -258,6 +258,7 @@ func (app *application) projectEmojiDelete(w http.ResponseWriter, r *http.Reques
 
 	data := app.newTemplateData(r)
 	data.Project = *project
+	app.addHXTrigger(w, "toastDeleteSuccess")
 	app.render(w, http.StatusOK, LayoutPartials, "list-emojis.html", data)
 }
 

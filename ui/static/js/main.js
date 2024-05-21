@@ -26,6 +26,29 @@ function createSpanHtmxIndicator() {
 //   return span
 // }
 
+// feedback for creating resource
+function generateToast(string) {
+  let div = document.createElement("div")
+  div.classList.add("toast", "toast-top", "toast-center")
+  div.id = "success_create"
+  let divAlert = document.createElement("div")
+  divAlert.classList.add("alert", "alert-info", "flex")
+  let span = document.createElement("span")
+  span.innerHTML = string
+  let btn = document.createElement("button")
+  btn.classList.add("btn", "btn-sm")
+  btn.innerHTML = "close"
+  btn.onclick = function () {
+    div.remove()
+  }
+
+  divAlert.appendChild(span)
+  divAlert.appendChild(btn)
+  div.appendChild(divAlert)
+
+  document.body.appendChild(div)
+}
+
 htmx.onLoad(function (content) {
   var elementHtmxLoading = content.getElementsByClassName("insert-htmx-loading")
   if (elementHtmxLoading.length > 0) {
@@ -45,6 +68,16 @@ htmx.onLoad(function (content) {
       }
     }
 
+  })
+
+  document.body.addEventListener("toastCreateSuccess", function (evt) {
+    generateToast("Create Success")
+  })
+  document.body.addEventListener("toastUpdateSuccess", function (evt) {
+    generateToast("Update Success")
+  })
+  document.body.addEventListener("toastDeleteSuccess", function (evt) {
+    generateToast("Delete Success")
   })
   // var elementHtmxLoading = content.getElementsByClassName("insert-htmx-loading-dots")
   // if (elementHtmxLoading.length > 0) {
