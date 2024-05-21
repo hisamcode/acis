@@ -1,12 +1,12 @@
 
 TODO:
-- decoupling handlers
-- create emojis
-- list emojis
-- update emojis
-- delete emojis
-- update emojis
+- decoupling handlers, ok
+- create emojis, ok
+- list emojis, ok
+- update emojis, ok
+- delete emojis, ok
 - list transaction
+- create transaction
 - update transaction
 - delete transaction
 - report in daily
