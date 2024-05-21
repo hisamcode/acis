@@ -1,7 +1,82 @@
 {{define "title"}} Setting {{end}}
 
 {{define "main"}}
-<div class="m-4">
+<div class="m-4 mb-20">
+  <div>
+    <div class="flex">
+      <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+        width="24" height="24" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M16.153 19 21 12l-4.847-7H3l4.848 7L3 19h13.153Z" />
+      </svg>
+
+      <h1 class="text-lg ml-4">Emoji</h1>
+    </div>
+    <div id="emoji_create_validation"></div>
+    <form method="POST" id="form_emoji_create" hx-post="/projects/{{.Project.ID}}/emoji" hx-target="#list_emoji"
+      hx-target-422="#emoji_create_validation">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+      <div class="py-4">
+        <div class="mt-2">
+          <label class="form-control w-full">
+            <div class=" label">
+              <span class="label-text">Name</span>
+            </div>
+            <input type="text" name="emoji_name" value="{{.Form.Emoji.Name}}" placeholder="Name"
+              class="input input-bordered focus:input-primary w-full" />
+            {{with .Form.Emoji.FieldErrors.name}}
+            <div class=" label">
+              <span class="label-text text-warning">{{.}}</span>
+            </div>
+            {{end}}
+          </label>
+        </div>
+
+        <div class="mt-2">
+          <label class="form-control w-full">
+            <div class=" label">
+              <span class="label-text">Emoji</span>
+            </div>
+            <input type="text" name="emoji" class="textarea textarea-bordered focus:textarea-primary"
+              placeholder="Detail">{{.Form.Emoji.Emoji}}</input>
+            {{with .Form.Emoji.FieldErrors.emoji}}
+            <div class=" label">
+              <span class="label-text text-warning">{{.}}</span>
+            </div>
+            {{end}}
+          </label>
+        </div>
+      </div>
+      <div class="">
+        <button class="btn w-full">
+          Add
+          <span class="loading loading-spinner htmx-indicator"></span>
+        </button>
+      </div>
+    </form>
+
+    <div class="divider">Emojis</div>
+    <div id="list_emoji">
+      <table class="table ">
+        <tbody>
+          {{range .Project.Emojis}}
+          <tr class="hover cursor-pointer text-center" onclick="showModalEmoji(this)">
+            <input type="hidden" value="{{.ID}}">
+            <td>
+              <div class="text-2xl">{{.Emoji}}</div>
+            </td>
+            <td>
+              <div class="">{{.Name}}</div>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
   <div>
     <div class="flex">
       <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -23,7 +98,7 @@
             <input type="text" name="name" value="{{.Form.Project.Name}}" placeholder="Name"
               class="input input-bordered focus:input-primary w-full" />
             {{with .Form.Project.FieldErrors.name}}
-            <div class=" label">
+            <div class="label">
               <span class="label-text text-warning">{{.}}</span>
             </div>
             {{end}}
@@ -54,7 +129,123 @@
       </div>
     </form>
   </div>
-
-  <div class="divider"></div>
 </div>
+
+<!-- modals:emoji -->
+<dialog id="emoji_modal" class="modal modal-bottom sm:modal-middle">
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="font-bold text-lg" id="emoji_modal_title">Emoji</h3>
+    <div id="emoji_update_validation"></div>
+    <form id="emoji_modal_form" method="POST" hx-put="/projects/{{.Project.ID}}/emoji">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+      <input type="hidden" name="emoji_id" id="emoji_modal_id">
+      <div class="py-4">
+        <div class="mt-2">
+          <label class="form-control w-full">
+            <div class=" label">
+              <span class="label-text">Name</span>
+            </div>
+            <input type="text" id="emoji_modal_name" name="emoji_name" placeholder="name"
+              class="input input-bordered focus:input-primary w-full" />
+          </label>
+        </div>
+        <div class="mt-2">
+          <label class="form-control w-full">
+            <div class=" label">
+              <span class="label-text">Emoji</span>
+            </div>
+            <input type="text" id="emoji_modal_emoji" name="emoji" placeholder="Emoji"
+              class="input input-bordered focus:input-primary w-full" />
+          </label>
+        </div>
+      </div>
+    </form>
+    <div class="modal-action">
+      <button class="btn btn-info" hx-put="/projects/{{.Project.ID}}/emoji" hx-include="#emoji_modal_form"
+        hx-target="#list_emoji" hx-target-error="#emoji_update_validation" hx-swap="outerHTML">
+        Update
+        <span class="loading loading-spinner htmx-indicator"></span>
+      </button>
+      <button class="btn btn-error" onclick="showModalEmojiDelete(this)">
+        Delete
+        <span class="loading loading-spinner htmx-indicator"></span>
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<div id="emoji_delete_target"></div>
+
+<!-- modals:delete emoji -->
+<dialog id="emoji_modal_delete" class="modal modal-bottom sm:modal-middle">
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="font-bold text-lg">Delete</h3>
+    <p class="py-4" id="emoji_modal_delete_content">Delete</p>
+    <div class="modal-action">
+      <form method="dialog">
+        <!-- if there is a button in form, it will close the modal -->
+        <button class="btn">No</button>
+      </form>
+      <form hx-post="/projects/{{.Project.ID}}/emoji/delete" hx-target="#list_emoji" hx-swap="outerHTML">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+        <input type="hidden" name="emoji_id" id="emoji_modal_delete_id">
+        <button class="btn insert-htmx-loading">
+          Yes
+        </button>
+      </form>
+    </div>
+  </div>
+</dialog>
+<script>
+  // document.body.addEventListener('htmx:beforeOnLoad', function (evt) {
+  //   if (evt.detail.xhr.status === 422) {
+  //     evt.detail.shouldSwap = true;
+  //     evt.detail.isError = false;
+  //   }
+  // });
+  // param {element} elem
+  function showModalEmoji(elem) {
+    let id = elem.querySelector("input").value
+    let emoji = elem.querySelector("td:nth-child(2) > div").innerHTML
+    let name = elem.querySelector("td:nth-child(3) > div").innerHTML
+
+    emoji_modal_title.innerHTML = "Emoji"
+    emoji_modal_emoji.value = emoji
+    emoji_modal_name.value = name
+    emoji_modal_id.value = id
+
+    emoji_modal.showModal()
+    let validation_error = document.getElementById("validation_error")
+    if (validation_error != null) {
+      validation_error.remove()
+    }
+  }
+
+  function showModalEmojiDelete(elem) {
+    // let id = elem.querySelector("input").value
+    // let emoji = elem.querySelector("td:nth-child(2) > div").innerHTML
+    // let name = elem.querySelector("td:nth-child(3) > div").innerHTML
+
+    let id = emoji_modal_id.value
+    let name = emoji_modal_name.value
+    let emoji = emoji_modal_emoji.value
+
+    emoji_modal_delete_content.innerHTML = `Are you sure want to delete ${name}(${emoji})?`
+    emoji_modal_delete_id.value = id
+
+    emoji_modal_delete.showModal()
+  }
+</script>
 {{end}}

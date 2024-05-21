@@ -38,6 +38,8 @@ type transactionForm struct {
 	Detail              string  `form:"detail"`
 	WTSID               int8    `form:"wts_id"`
 	EmojiID             string  `form:"emoji_id"`
+	EmojiName           string  `form:"emoji_name"`
+	Emoji               string  `form:"emoji"`
 	validator.Validator `form:"-"`
 }
 
@@ -123,19 +125,142 @@ func (app *application) projectTransactionPost(w http.ResponseWriter, r *http.Re
 	http.Redirect(w, r, fmt.Sprintf("/projects/%d/home", project.ID), http.StatusSeeOther)
 }
 
-type projectTransactionForm struct {
-	transactionForm
-	// projectForm for update on page setting
-	Project projectForm
+type emojiForm struct {
+	ID    string `form:"emoji_id"`
+	Name  string `form:"emoji_name"`
+	Emoji string `form:"emoji"`
+	validator.Validator
 }
 
-func (app *application) projectSetting(w http.ResponseWriter, r *http.Request) {
-	projectID, err := strconv.ParseInt(r.PathValue("projectID"), 10, 64)
+func (app *application) projectEmojiPut(w http.ResponseWriter, r *http.Request) {
+	project, err := app.getProject(r)
 	if err != nil {
 		app.renderServerError(w, err)
 		return
 	}
-	project, err := app.DB.Project.Get(projectID)
+
+	form := emojiForm{}
+
+	err = app.decodePostForm(r, &form)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	emoji := data.Emoji{
+		ID:    form.ID,
+		Name:  form.Name,
+		Emoji: form.Emoji,
+	}
+
+	form.Validator = *validator.New()
+	if data.ValidateEmoji(&form.Validator, &emoji); !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.addHXReswap(w, HXSWAP_INNER)
+		app.render(w, http.StatusUnprocessableEntity, LayoutPartials, "validation-error.html", data)
+		return
+	}
+
+	err = project.UpdateEmoji(emoji)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	err = app.DB.Project.Update(project)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Project = *project
+	app.render(w, http.StatusOK, LayoutPartials, "list-emojis.html", data)
+}
+
+func (app *application) projectEmojiPost(w http.ResponseWriter, r *http.Request) {
+	project, err := app.getProject(r)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	form := emojiForm{}
+
+	err = app.decodePostForm(r, &form)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	emoji := data.CreateEmoji(form.Name, form.Emoji)
+
+	form.Validator = *validator.New()
+	if data.ValidateEmoji(&form.Validator, &emoji); !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, http.StatusUnprocessableEntity, LayoutPartials, "validation-error.html", data)
+		return
+	}
+
+	project.Emojis = append(project.Emojis, emoji)
+
+	err = app.DB.Project.Update(project)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Project = *project
+	app.render(w, http.StatusOK, LayoutPartials, "list-emojis.html", data)
+}
+
+func (app *application) projectEmojiDelete(w http.ResponseWriter, r *http.Request) {
+	project, err := app.getProject(r)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	form := emojiForm{}
+	err = app.decodePostForm(r, &form)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	emoji := data.Emoji{
+		ID: form.ID,
+	}
+
+	err = project.DeleteEmoji(emoji)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	err = app.DB.Project.Update(project)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Project = *project
+	app.render(w, http.StatusOK, LayoutPartials, "list-emojis.html", data)
+}
+
+type projectTransactionForm struct {
+	transactionForm
+	// projectForm for update on page setting
+	Project projectForm
+	Emoji   emojiForm
+}
+
+func (app *application) projectSetting(w http.ResponseWriter, r *http.Request) {
+	project, err := app.getProject(r)
 	if err != nil {
 		app.renderServerError(w, err)
 		return
@@ -146,12 +271,13 @@ func (app *application) projectSetting(w http.ResponseWriter, r *http.Request) {
 			Name:   project.Name,
 			Detail: project.Detail,
 		},
+		Emoji: emojiForm{},
 	}
 
-	data := app.newTemplateData(r)
-	data.Project = *project
-	data.Form = pf
-	app.render(w, http.StatusOK, LayoutProject, "setting.html", data)
+	d := app.newTemplateData(r)
+	d.Project = *project
+	d.Form = pf
+	app.render(w, http.StatusOK, LayoutProject, "setting.html", d)
 }
 
 func (app *application) projectSettingPut(w http.ResponseWriter, r *http.Request) {

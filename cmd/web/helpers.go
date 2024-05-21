@@ -33,8 +33,23 @@ func (app *application) getProject(r *http.Request) (*data.Project, error) {
 // execute event on client
 func (app *application) addHXTriggerAfterSettle(w http.ResponseWriter, eventName string) {
 	w.Header().Add("HX-Trigger-After-Settle", eventName)
+
 }
 
+type hxswap uint8
+
+const (
+	HXSWAP_INNER hxswap = iota
+)
+
+func (h hxswap) String() string {
+	return []string{"innerHTML"}[h]
+}
+
+func (app *application) addHXReswap(w http.ResponseWriter, swap hxswap) {
+	w.Header().Add("HX-Reswap", swap.String())
+
+}
 func (app *application) isAuthenticated(r *http.Request) int64 {
 	// return app.sessionManager.Exists(r.Context(), session.SessionAuthenticatedUserID)
 	if !app.sessionManager.Exists(r.Context(), session.SessionAuthenticatedUserID) {

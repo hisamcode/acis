@@ -4,7 +4,7 @@
 
 {{template "head" .}}
 
-<body>
+<body hx-ext="response-targets">
   <div class="drawer">
     <input id="my-drawer-3" type="checkbox" class="drawer-toggle" />
     <div class="drawer-content flex flex-col">
@@ -139,8 +139,8 @@
               <div class=" label">
                 <span class="label-text">Detail</span>
               </div>
-              <textarea name="detail" class="textarea textarea-bordered focus:textarea-primary" placeholder="Detail"
-                rows="4">{{.Form.Detail}}</textarea>
+              <input name="detail" class="textarea textarea-bordered focus:textarea-primary" placeholder="Detail"
+                value="{{.Form.Detail}}"></input>
               {{with .Form.FieldErrors.detail}}
               <div class=" label">
                 <span class="label-text text-warning">{{.}}</span>
@@ -149,6 +149,22 @@
             </label>
           </div>
 
+          <div class="mt-2" id="create_transaction_emoji">
+            <div class="mb-2">
+              <span class="label-text">Emoji</span>
+            </div>
+            <div class="flex text-center">
+              <div class="" onclick="create_emoji.showModal()">
+                <svg class="w-12 h-12" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                  fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 12h14m-7 7V5" />
+                </svg>
+                <label class="label-text text-xs">Add</label>
+              </div>
+
+            </div>
+          </div>
         </div>
         <div class="modal-action">
           <button class="btn">
@@ -159,6 +175,7 @@
       </form>
     </div>
   </dialog>
+
 
   <!-- modals:logout -->
   <dialog id="logout_modal" class="modal modal-bottom sm:modal-middle">

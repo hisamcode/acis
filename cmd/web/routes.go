@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/justinas/alice"
@@ -12,6 +13,10 @@ func (app *application) routes() *http.ServeMux {
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+
+	mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "oke")
+	})
 
 	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
 
@@ -33,6 +38,10 @@ func (app *application) routes() *http.ServeMux {
 	mux.Handle("GET /projects/{projectID}/settings", protected.ThenFunc(app.projectSetting))
 	mux.Handle("POST /projects/{projectID}/transaction", protected.ThenFunc(app.projectTransactionPost))
 	mux.Handle("PUT /projects/{projectID}", protected.ThenFunc(app.projectSettingPut))
+
+	mux.Handle("POST /projects/{projectID}/emoji", protected.ThenFunc(app.projectEmojiPost))
+	mux.Handle("PUT /projects/{projectID}/emoji", protected.ThenFunc(app.projectEmojiPut))
+	mux.Handle("POST /projects/{projectID}/emoji/delete", protected.ThenFunc(app.projectEmojiDelete))
 
 	mux.Handle("GET /transaction/create", protected.ThenFunc(app.transactionCreate))
 	mux.Handle("POST /transaction", protected.ThenFunc(app.transactionPost))

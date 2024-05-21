@@ -15,16 +15,18 @@ type ProjectModel struct {
 
 // insert with return id and error
 func (m ProjectModel) Insert(project *data.Project) (int64, error) {
-	if len(project.Emojis) < 1 {
-		project.Emojis = append(project.Emojis, "empty;empty;empty")
-	}
-
 	query := `
 	INSERT INTO projects (name, detail, emojis, user_id)
 	VALUES ($1, $2, $3, $4) 
 	RETURNING id, created_at, version
 	`
-	args := []any{project.Name, project.Detail, pq.Array(project.Emojis), project.UserID}
+
+	emojisEncoded := []string{}
+	for _, v := range project.Emojis {
+		emojisEncoded = append(emojisEncoded, v.Encode())
+	}
+
+	args := []any{project.Name, project.Detail, pq.Array(emojisEncoded), project.UserID}
 
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
@@ -58,11 +60,13 @@ func (m ProjectModel) Get(id int64) (*data.Project, error) {
 
 	var project data.Project
 
+	emojisEncoded := []string{}
+
 	err := m.DB.QueryRowContext(ctx, query, id).Scan(
 		&project.ID,
 		&project.Name,
 		&project.Detail,
-		pq.Array(&project.Emojis),
+		pq.Array(&emojisEncoded),
 		&project.CreatedAt,
 		&project.Version,
 		&project.UserID,
@@ -75,6 +79,15 @@ func (m ProjectModel) Get(id int64) (*data.Project, error) {
 		default:
 			return nil, err
 		}
+	}
+
+	for _, v := range emojisEncoded {
+		emoji := data.Emoji{}
+		err := emoji.Decode(v)
+		if err != nil {
+			return nil, err
+		}
+		project.Emojis = append(project.Emojis, emoji)
 	}
 
 	return &project, nil
@@ -103,12 +116,13 @@ func (m ProjectModel) LatestByUserID(userID int64) ([]data.Project, error) {
 
 	for rows.Next() {
 		var project data.Project
+		emojis := []string{}
 
 		err := rows.Scan(
 			&project.ID,
 			&project.Name,
 			&project.Detail,
-			pq.Array(&project.Emojis),
+			pq.Array(&emojis),
 			&project.CreatedAt,
 			&project.Version,
 			&project.UserID,
@@ -117,6 +131,8 @@ func (m ProjectModel) LatestByUserID(userID int64) ([]data.Project, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		project.Emojis = data.DecodeEmojis(emojis)
 
 		projects = append(projects, project)
 	}
@@ -137,10 +153,16 @@ func (m ProjectModel) Update(project *data.Project) error {
 	returning version
 	`
 
+	// encoded emoji
+	encodedEmojis := []string{}
+	for _, v := range project.Emojis {
+		encodedEmojis = append(encodedEmojis, v.Encode())
+	}
+
 	args := []any{
 		project.Name,
 		project.Detail,
-		pq.Array(project.Emojis),
+		pq.Array(encodedEmojis),
 		project.UserID,
 		project.ID,
 		project.Version,
