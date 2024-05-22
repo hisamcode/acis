@@ -5,4 +5,12 @@ module.exports = {
     extend: {},
   },
   plugins: [require("daisyui")],
+  safelist: [
+    "toast",
+    "toast-top",
+    "toast-center",
+    "toast-center",
+    "alert",
+    "alert-info"
+  ]
 }
