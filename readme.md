@@ -16,6 +16,8 @@ TODO:
 - navigate to next month and prev month
 - navigate to next year and prev year
 
+validation transaction
+
 user
 id | avatar | name | email | password
 

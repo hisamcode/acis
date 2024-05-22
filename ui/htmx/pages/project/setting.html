@@ -14,7 +14,7 @@
     </div>
     <div id="emoji_create_validation"></div>
     <form method="POST" id="form_emoji_create" hx-post="/projects/{{.Project.ID}}/emoji" hx-target="#list_emoji"
-      hx-target-422="#emoji_create_validation">
+      hx-target-422="#emoji_create_validation" onsubmit="onSubmit(event)">
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
       <div class="py-4">
         <div class="mt-2">
@@ -34,7 +34,7 @@
               <span class="label-text">Emoji</span>
             </div>
             <input type="text" name="emoji" class="textarea textarea-bordered focus:textarea-primary"
-              placeholder="Detail">{{.Form.Emoji.Emoji}}</input>
+              placeholder="emoji">{{.Form.Emoji.Emoji}}</input>
             <div class="validation_error label" id="create_emoji_error"></div>
           </label>
         </div>

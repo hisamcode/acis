@@ -26,6 +26,7 @@ func (e *Emoji) Encode() string {
 }
 
 func (e *Emoji) Decode(encodedString string) error {
+	// TODO: error index out of range
 	split := strings.Split(encodedString, ";")
 	if len(split) > 3 {
 		return errors.New("incorrect encoding")
@@ -81,6 +82,15 @@ type Project struct {
 	Emojis    []Emoji
 	Version   int
 	UserID    int64
+}
+
+func (p *Project) FindEmoji(ID string) (Emoji, error) {
+	for _, v := range p.Emojis {
+		if v.ID == ID {
+			return v, nil
+		}
+	}
+	return Emoji{}, errors.New("emoji not found")
 }
 
 func (p *Project) UpdateEmoji(emoji Emoji) error {

@@ -1,7 +1,7 @@
 {{define "partials"}}
 <div>
   {{range $k, $v := .Form.FieldErrors}}
-  <div class="validation_error label" id="{{$.Form.PrefixValidation}}_{{$k}}_error" hx-swap-oob="true">
+  <div class="validation_error label" id="{{$.Form.PrefixValidation.PrefixValidation}}_{{$k}}_error" hx-swap-oob="true">
     <span class="label-text text-warning">{{$v}}</span>
   </div>
   {{end}}

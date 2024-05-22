@@ -5,10 +5,18 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/hisamcode/acis/internal/data"
 	"github.com/hisamcode/acis/internal/validator"
 )
+
+type PrefixValidation struct {
+	// dipake di file partials/form-validation.html buat ngebedain, kalo
+	// ga pake nanti bakal keluar error validasinya(both) 2 2 nya, kalo
+	// misalkan ada lebih dari 1 form yang pake validasi oob
+	PrefixValidation string
+}
 
 type projectForm struct {
 	Name                string `form:"name"`
@@ -34,13 +42,15 @@ func (app *application) latestProjects(w http.ResponseWriter, r *http.Request) {
 }
 
 type transactionForm struct {
-	Nominal             float64 `form:"nominal"`
-	Detail              string  `form:"detail"`
-	WTSID               int8    `form:"wts_id"`
-	EmojiID             string  `form:"emoji_id"`
-	EmojiName           string  `form:"emoji_name"`
-	Emoji               string  `form:"emoji"`
+	Nominal             float64   `form:"nominal"`
+	Detail              string    `form:"detail"`
+	WTSID               int8      `form:"wts_id"`
+	EmojiID             string    `form:"emoji_id"`
+	EmojiName           string    `form:"emoji_name"`
+	Emoji               string    `form:"emoji"`
+	CreatedAt           time.Time `form:"created_at"`
 	validator.Validator `form:"-"`
+	PrefixValidation
 }
 
 func (app *application) project(w http.ResponseWriter, r *http.Request) {
@@ -71,40 +81,10 @@ func (app *application) projectTransactionPost(w http.ResponseWriter, r *http.Re
 	}
 
 	transaction := data.Transaction{
-		Nominal: form.Nominal,
-		Detail:  form.Detail,
-		WTSID:   1,
-	}
-
-	if len(form.EmojiID) > 0 {
-		emoji := data.Emoji{}
-		err = emoji.Decode(form.EmojiID)
-		if err != nil {
-			app.renderServerError(w, err)
-			return
-		}
-		transaction.EmojiID = emoji
-	} else {
-		transaction.EmojiID = data.Emoji{
-			ID:    "empty",
-			Name:  "empty",
-			Emoji: "empty",
-		}
-	}
-
-	form.Validator = *validator.New()
-	if data.ValidateTransaction(&form.Validator, &transaction); !form.Validator.Valid() {
-		project, err := app.getProject(r)
-		if err != nil {
-			app.renderServerError(w, err)
-			return
-		}
-		data := app.newTemplateData(r)
-		data.Form = form
-		data.Project = *project
-		app.addHXTriggerAfterSettle(w, "validationCreateTransaction")
-		app.render(w, http.StatusOK, LayoutProject, "home.html", data)
-		return
+		Nominal:   form.Nominal,
+		Detail:    form.Detail,
+		WTSID:     1,
+		CreatedAt: form.CreatedAt,
 	}
 
 	project, err := app.getProject(r)
@@ -113,8 +93,31 @@ func (app *application) projectTransactionPost(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	form.Validator = *validator.New()
+	form.Validator.Check(form.EmojiID != "", "emoji_id", "emoji cant empty")
+
+	emoji, err := project.FindEmoji(form.EmojiID)
+	if err != nil {
+		form.Validator.AddFieldError("emoji_id", "emoji not found")
+	}
+
+	if data.ValidateTransaction(&form.Validator, &transaction); !form.Validator.Valid() {
+		data := app.newTemplateData(r)
+		form.PrefixValidation.PrefixValidation = "create"
+		data.Form = form
+		app.addHXReswap(w, HXSWAP_NONE)
+		w.Header().Add("Hx-Push-Url", "false")
+		err = app.render(w, http.StatusUnprocessableEntity, LayoutPartials, "form-validation.html", data)
+		if err != nil {
+			app.renderServerError(w, err)
+			return
+		}
+		return
+	}
+
 	transaction.ProjectID = project.ID
 	transaction.CreatedBy = app.userID
+	transaction.Emoji = emoji
 
 	err = app.DB.Transaction.Insert(&transaction)
 	if err != nil {
@@ -129,11 +132,8 @@ type emojiForm struct {
 	ID    string `form:"emoji_id"`
 	Name  string `form:"emoji_name"`
 	Emoji string `form:"emoji"`
-	// dipake di file partials/form-validation.html buat ngebedain, kalo
-	// ga pake nanti bakal keluar error validasinya(both) 2 2 nya, kalo
-	// misalkan ada lebih dari 1 form yang pake validasi oob
-	PrefixValidation string
 	validator.Validator
+	PrefixValidation
 }
 
 func (app *application) projectEmojiPut(w http.ResponseWriter, r *http.Request) {
@@ -160,7 +160,7 @@ func (app *application) projectEmojiPut(w http.ResponseWriter, r *http.Request) 
 	form.Validator = *validator.New()
 	if data.ValidateEmoji(&form.Validator, &emoji); !form.Valid() {
 		data := app.newTemplateData(r)
-		form.PrefixValidation = "update"
+		form.PrefixValidation.PrefixValidation = "update"
 		data.Form = form
 		app.addHXReswap(w, HXSWAP_NONE)
 		app.render(w, http.StatusUnprocessableEntity, LayoutPartials, "form-validation.html", data)
@@ -182,6 +182,7 @@ func (app *application) projectEmojiPut(w http.ResponseWriter, r *http.Request) 
 	data := app.newTemplateData(r)
 	data.Project = *project
 	app.addHXTrigger(w, "clearValidation,toastUpdateSuccess")
+	app.addHXReswap(w, HXSWAP_NONE)
 	app.render(w, http.StatusOK, LayoutPartials, "list-emojis.html", data)
 }
 
@@ -205,10 +206,10 @@ func (app *application) projectEmojiPost(w http.ResponseWriter, r *http.Request)
 	form.Validator = *validator.New()
 	if data.ValidateEmoji(&form.Validator, &emoji); !form.Valid() {
 		data := app.newTemplateData(r)
-		form.PrefixValidation = "create"
+		form.PrefixValidation.PrefixValidation = "create"
 		data.Form = form
 		app.addHXReswap(w, HXSWAP_NONE)
-		app.render(w, http.StatusOK, LayoutPartials, "form-validation.html", data)
+		app.render(w, http.StatusUnprocessableEntity, LayoutPartials, "form-validation.html", data)
 		return
 	}
 
@@ -223,6 +224,7 @@ func (app *application) projectEmojiPost(w http.ResponseWriter, r *http.Request)
 	data := app.newTemplateData(r)
 	data.Project = *project
 	app.addHXTrigger(w, "clearValidation,toastCreateSuccess")
+	app.addHXReswap(w, HXSWAP_NONE)
 	app.render(w, http.StatusOK, LayoutPartials, "list-emojis.html", data)
 }
 
@@ -259,6 +261,7 @@ func (app *application) projectEmojiDelete(w http.ResponseWriter, r *http.Reques
 	data := app.newTemplateData(r)
 	data.Project = *project
 	app.addHXTrigger(w, "toastDeleteSuccess")
+	app.addHXReswap(w, HXSWAP_NONE)
 	app.render(w, http.StatusOK, LayoutPartials, "list-emojis.html", data)
 }
 

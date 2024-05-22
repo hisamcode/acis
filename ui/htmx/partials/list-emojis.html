@@ -1,19 +1,37 @@
 {{define "partials"}}
-<div id="list_emoji">
-  <table class="table ">
-    <tbody>
-      {{range .Project.Emojis}}
-      <tr class="hover cursor-pointer text-center" onclick="showModalEmoji(this)">
-        <input type="hidden" value="{{.ID}}">
-        <td>
-          <div class="text-2xl">{{.Emoji}}</div>
-        </td>
-        <td>
-          <div class="">{{.Name}}</div>
-        </td>
-      </tr>
-      {{end}}
-    </tbody>
-  </table>
+
+<div>
+
+  <div class="flex text-center gap-4" id="choose_emojis" hx-swap-oob="true">
+    {{range .Project.Emojis}}
+    <div class="btn btn-ghost btn-square " data-emoji="{{.ID}}" onclick="chooseEmoji(this)">
+      <div class="text-3xl">
+        {{.Emoji}}
+      </div>
+      <div class="text-sm">
+        {{.Name}}
+      </div>
+    </div>
+    {{end}}
+  </div>
+
+
+  <div id="list_emoji" hx-swap-oob="true">
+    <table class="table ">
+      <tbody>
+        {{range .Project.Emojis}}
+        <tr class="hover cursor-pointer text-center" onclick="showModalEmoji(this)">
+          <input type="hidden" value="{{.ID}}">
+          <td>
+            <div class="text-2xl">{{.Emoji}}</div>
+          </td>
+          <td>
+            <div class="">{{.Name}}</div>
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
 </div>
 {{end}}

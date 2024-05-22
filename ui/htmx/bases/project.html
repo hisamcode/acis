@@ -78,7 +78,7 @@
       <span class="btm-nav-label text-sm">Home</span>
       <span class="loading loading-dots loading-xs htmx-indicator"></span>
     </a>
-    <button id="btn-project-create" onclick="create_transaction.showModal()">
+    <button id="btn-project-create" onclick="showModalCreateTransaction()">
       <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
         viewBox="0 0 24 24">
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -116,7 +116,8 @@
         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <h3 class="font-bold text-lg">Create Transaction</h3>
-      <form method="POST" hx-post="/projects/{{.Project.ID}}/transaction" hx-target="body" hx-push-url="true">
+      <form method="POST" id="form_create_transaction" hx-post="/projects/{{.Project.ID}}/transaction" hx-target="body"
+        hx-target-422="#form_create_transaction" hx-push-url="true" onsubmit="onSubmit()">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <div class="py-4">
           <div class="mt-2">
@@ -125,12 +126,8 @@
                 <span class="label-text">Nominal</span>
               </div>
               <input type="number" name="nominal" value="{{.Form.Nominal}}" placeholder="Nominal"
-                class="input input-bordered focus:input-primary w-full" />
-              {{with .Form.FieldErrors.nominal}}
-              <div class=" label">
-                <span class="label-text text-warning">{{.}}</span>
-              </div>
-              {{end}}
+                class="input input-bordered focus:input-primary w-full" id="create_transaction_nominal" />
+              <div class="validation_error label" id="create_nominal_error"></div>
             </label>
           </div>
 
@@ -141,28 +138,41 @@
               </div>
               <input name="detail" class="textarea textarea-bordered focus:textarea-primary" placeholder="Detail"
                 value="{{.Form.Detail}}"></input>
-              {{with .Form.FieldErrors.detail}}
-              <div class=" label">
-                <span class="label-text text-warning">{{.}}</span>
-              </div>
-              {{end}}
+              <div class="validation_error label" id="create_detail_error"></div>
             </label>
           </div>
 
-          <div class="mt-2" id="create_transaction_emoji">
+          <div class="mt-2">
+            <label class="form-control w-full">
+              <div class=" label">
+                <span class="label-text">Date</span>
+              </div>
+              <input type="hidden" name="created_at" id="transaction_create_created_at">
+              <input type="datetime-local" name="created_at_picker" id="transaction_create_created_at_picker"
+                class="textarea textarea-bordered focus:textarea-primary" placeholder="Detail"
+                value="{{.Form.CreatedAt}}" onfocus="this.showPicker()"
+                onchange="transaction_create_created_at.value = toLocalISOString(new Date(this.value))"></input>
+              <div class="validation_error label" id="create_created_at_error"></div>
+            </label>
+          </div>
+
+          <div class="mt-2">
             <div class="mb-2">
               <span class="label-text">Emoji</span>
+              <div class="validation_error label" id="create_emoji_id_error"></div>
             </div>
-            <div class="flex text-center">
-              <div class="" onclick="create_emoji.showModal()">
-                <svg class="w-12 h-12" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                  fill="none" viewBox="0 0 24 24">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M5 12h14m-7 7V5" />
-                </svg>
-                <label class="label-text text-xs">Add</label>
+            <input type="hidden" name="emoji_id" id="emoji_id">
+            <div class="flex text-center gap-4" id="choose_emojis">
+              {{range .Project.Emojis}}
+              <div class="btn btn-ghost btn-square " data-emoji="{{.ID}}" onclick="chooseEmoji(this)">
+                <div class="text-3xl">
+                  {{.Emoji}}
+                </div>
+                <div class="text-sm">
+                  {{.Name}}
+                </div>
               </div>
-
+              {{end}}
             </div>
           </div>
         </div>
@@ -205,14 +215,53 @@
 
 </body>
 <script>
-  var btmNavLinks = document.querySelectorAll("#btm-nav a")
-  for (var i = 0; i < btmNavLinks.length; i++) {
-    var link = btmNavLinks[i]
-    if (link.getAttribute('href') == window.location.pathname) {
-      link.classList.add("active", "text-primary")
-      break
+  function toLocalISOString(date) {
+    const localDate = new Date(date - date.getTimezoneOffset() * 60000); //offset in milliseconds. Credit https://stackoverflow.com/questions/10830357/javascript-toisostring-ignores-timezone-offset
+
+    // Optionally remove second/millisecond if needed
+    localDate.setSeconds(null);
+    localDate.setMilliseconds(null);
+    return localDate.toISOString()
+  }
+
+  (function () {
+    transaction_create_created_at_picker.value = toLocalISOString(new Date()).slice(0, -1);
+    transaction_create_created_at.value = toLocalISOString(new Date())
+
+
+    var btmNavLinks = document.querySelectorAll("#btm-nav a")
+    for (var i = 0; i < btmNavLinks.length; i++) {
+      var link = btmNavLinks[i]
+      if (link.getAttribute('href') == window.location.pathname) {
+        link.classList.add("active", "text-primary")
+        break
+      }
+    }
+  })()
+
+
+
+  function showModalCreateTransaction() {
+    create_transaction.showModal()
+  }
+
+  function chooseEmoji(elm) {
+    let id = elm.getAttribute("data-emoji")
+    if (emoji_id.value == id) {
+      elm.classList.remove("btn-active")
+      emoji_id.value = null
+      return
+    }
+    emoji_id.value = id
+    for (const emoji of elm.parentElement.children) {
+      if (emoji.getAttribute("data-emoji") == id) {
+        emoji.classList.add("btn-active")
+      } else {
+        emoji.classList.remove("btn-active")
+      }
     }
   }
+
 </script>
 
 </html>

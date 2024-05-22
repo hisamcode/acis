@@ -62,7 +62,10 @@ htmx.onLoad(function (content) {
 })
 
 
-
+function onSubmit(evt) {
+  let event = new CustomEvent("clearValidation")
+  document.dispatchEvent(event)
+}
 
 // timeServerToClient is time from server to current client time
 // timeStr "09 May 24 08:22 UTC" or time from server with UTC
