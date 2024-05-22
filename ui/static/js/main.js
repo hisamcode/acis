@@ -74,6 +74,7 @@ htmx.onLoad(function (content) {
     generateToast("Create Success")
   })
   document.body.addEventListener("toastUpdateSuccess", function (evt) {
+    console.log(evt)
     generateToast("Update Success")
   })
   document.body.addEventListener("toastDeleteSuccess", function (evt) {

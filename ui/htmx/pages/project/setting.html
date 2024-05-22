@@ -223,9 +223,12 @@
     emoji_modal_id.value = id
 
     emoji_modal.showModal()
-    let validation_error = document.getElementById("validation_error")
-    if (validation_error != null) {
-      validation_error.remove()
+    let elms = emoji_modal.querySelectorAll("div.validation_error[hx-swap-oob]")
+    for (const elm of elms) {
+      elm.removeAttribute("hx-swap-oob")
+      for (const child of elm.children) {
+        child.remove()
+      }
     }
   }
 
