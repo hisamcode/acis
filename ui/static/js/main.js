@@ -49,6 +49,7 @@ function generateToast(string) {
   document.body.appendChild(div)
 }
 
+
 htmx.onLoad(function (content) {
   var elementHtmxLoading = content.getElementsByClassName("insert-htmx-loading")
   if (elementHtmxLoading.length > 0) {
@@ -58,43 +59,6 @@ htmx.onLoad(function (content) {
     }
   }
 
-  document.body.addEventListener("clearValidation", function (evt) {
-    let validationErrors = document.getElementsByClassName("validation_error")
-    for (let i = 0; i < validationErrors.length; i++) {
-      let validationError = validationErrors[i]
-      let span = validationError.getElementsByTagName("span")
-      if (span.length > 0) {
-        span[0].remove()
-      }
-    }
-
-  })
-
-  document.body.addEventListener("toastCreateSuccess", function (evt) {
-    generateToast("Create Success")
-  })
-  document.body.addEventListener("toastUpdateSuccess", function (evt) {
-    console.log(evt)
-    generateToast("Update Success")
-  })
-  document.body.addEventListener("toastDeleteSuccess", function (evt) {
-    generateToast("Delete Success")
-  })
-  // var elementHtmxLoading = content.getElementsByClassName("insert-htmx-loading-dots")
-  // if (elementHtmxLoading.length > 0) {
-  //   var spanhtmxindicator = createSpanHtmxIndicatorDots()
-  //   for (let i = 0; i < elementHtmxLoading.length; i++) {
-  //     elementHtmxLoading[i].appendChild(spanhtmxindicator)
-  //     console.log(elementHtmxLoading[i])
-  //   }
-  // }
-  // var elementSkeleton = content.getElementsByClassName("insert-htmx-skeleton")
-  // if (elementSkeleton.length > 0) {
-  //   var elementHtmxLoading = createSkeletonHtmxIndicator()
-  //   for (let i = 0; i < elementSkeleton.length; i++) {
-  //     elementSkeleton[i].appendChild(elementHtmxLoading)
-  //   }
-  // }
 })
 
 
@@ -116,23 +80,50 @@ function timeServerToClient(timeStr, el) {
   el.innerHTML = date
 }
 
-document.addEventListener('htmx:afterRequest', function (evt) {
-  if (evt.detail.xhr.status == 404) {
-    /* Notify the user of a 404 Not Found response */
-    return alert("Error: Could Not Find Resource");
-  }
-  if (evt.detail.successful != true) {
-    /* Notify of an unexpected error, & print error to console */
-    alert("Unexpected Error");
-    return console.error(evt);
-  }
-  if (evt.detail.target.id == 'list_emoji') {
-    if (evt.detail.successful == true) {
-      form_emoji_create.reset()
-      emoji_modal.close()
-      emoji_modal_delete.close()
+
+(function () {
+  document.addEventListener("toastCreateSuccess", function (evt) {
+    generateToast("Create Success")
+  })
+  document.addEventListener("toastUpdateSuccess", function (evt) {
+    generateToast("Update Success")
+  })
+  document.addEventListener("toastDeleteSuccess", function (evt) {
+    generateToast("Delete Success")
+  })
+
+
+  document.addEventListener("clearValidation", function (evt) {
+    let validationErrors = document.getElementsByClassName("validation_error")
+    for (let i = 0; i < validationErrors.length; i++) {
+      let validationError = validationErrors[i]
+      let span = validationError.getElementsByTagName("span")
+      if (span.length > 0) {
+        span[0].remove()
+      }
     }
-  }
-});
+
+  })
+
+  document.addEventListener('htmx:afterRequest', function (evt) {
+    if (evt.detail.xhr.status == 404) {
+      /* Notify the user of a 404 Not Found response */
+      return alert("Error: Could Not Find Resource");
+    }
+    if (evt.detail.successful != true) {
+      /* Notify of an unexpected error, & print error to console */
+      alert("Unexpected Error");
+      return console.error(evt);
+    }
+    if (evt.detail.target.id == 'list_emoji') {
+      if (evt.detail.successful == true) {
+        form_emoji_create.reset()
+        emoji_modal.close()
+        emoji_modal_delete.close()
+      }
+    }
+  });
+
+})()
 
 
