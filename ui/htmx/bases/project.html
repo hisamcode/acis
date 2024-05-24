@@ -133,6 +133,16 @@
 
           <div class="mt-2">
             <label class="form-control w-full">
+              <div class="grid grid-cols-2 gap-4">
+                <input type="radio" name="wts_id" class="btn" aria-label="IN" value="1" />
+                <input type="radio" name="wts_id" class="btn" aria-label="OUT" value="2" checked />
+              </div>
+              <div class="validation_error label" id="create_wts_id_error"></div>
+            </label>
+          </div>
+
+          <div class="mt-2">
+            <label class="form-control w-full">
               <div class=" label">
                 <span class="label-text">Detail</span>
               </div>
@@ -239,7 +249,7 @@
     }
   })()
 
-
+  showModalCreateTransaction()
 
   function showModalCreateTransaction() {
     create_transaction.showModal()

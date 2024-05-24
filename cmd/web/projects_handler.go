@@ -83,7 +83,7 @@ func (app *application) projectTransactionPost(w http.ResponseWriter, r *http.Re
 	transaction := data.Transaction{
 		Nominal:   form.Nominal,
 		Detail:    form.Detail,
-		WTSID:     1,
+		WTSID:     form.WTSID,
 		CreatedAt: form.CreatedAt,
 	}
 
