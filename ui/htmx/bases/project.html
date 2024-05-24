@@ -250,6 +250,8 @@
   })()
 
   function showModalCreateTransaction() {
+    create_transaction_nominal.value = null
+    window.setTimeout(() => create_transaction_nominal.focus(), 0)
     create_transaction.showModal()
   }
 
