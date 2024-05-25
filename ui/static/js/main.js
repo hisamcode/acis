@@ -4,27 +4,13 @@ function createSpanHtmxIndicator() {
   spanHtmxIndicator.classList.add("loading", "loading-spinner", "htmx-indicator")
   return spanHtmxIndicator
 }
-// function createSpanHtmxIndicatorDots() {
-//   var spanHtmxIndicator = document.createElement("span")
-//   spanHtmxIndicator.classList.add("loading", "loading-dots", "htmx-indicator", "loading-xs")
-//   return spanHtmxIndicator
-// }
 
-// function createSkeletonHtmxIndicator() {
-//   var span = document.createElement("span")
-//   span.classList.add("")
+function setAttributeClientDate(el) {
+  let dateNow = new Date().toISOString()
+  el.setAttribute("hx-headers", `{"client-date": "${dateNow}"}`)
 
-//   var flex = document.createElement("div")
-//   flex.classList.add("flex", "flex-col", "gap-4", "w-full", "my-4")
-
-//   var skeleton = document.createElement("div")
-//   skeleton.classList.add("skeleton", "h-4", "w-full")
-
-//   flex.appendChild(skeleton)
-//   span.appendChild(flex)
-
-//   return span
-// }
+  htmx.process(el)
+}
 
 // feedback for creating resource
 function generateToast(string) {
@@ -61,12 +47,6 @@ htmx.onLoad(function (content) {
 
 })
 
-
-function onSubmit(evt) {
-  let event = new CustomEvent("clearValidation")
-  document.dispatchEvent(event)
-}
-
 // timeServerToClient is time from server to current client time
 // timeStr "09 May 24 08:22 UTC" or time from server with UTC
 function timeServerToClient(timeStr, el) {
@@ -83,50 +63,5 @@ function timeServerToClient(timeStr, el) {
   el.innerHTML = date
 }
 
-
-(function () {
-  document.addEventListener("toastCreateSuccess", function (evt) {
-    generateToast("Create Success")
-  })
-  document.addEventListener("toastUpdateSuccess", function (evt) {
-    generateToast("Update Success")
-  })
-  document.addEventListener("toastDeleteSuccess", function (evt) {
-    generateToast("Delete Success")
-  })
-
-
-  document.addEventListener("clearValidation", function (evt) {
-    let validationErrors = document.getElementsByClassName("validation_error")
-    for (let i = 0; i < validationErrors.length; i++) {
-      let validationError = validationErrors[i]
-      let span = validationError.getElementsByTagName("span")
-      if (span.length > 0) {
-        span[0].remove()
-      }
-    }
-
-  })
-
-  document.addEventListener('htmx:afterRequest', function (evt) {
-    if (evt.detail.xhr.status == 404) {
-      /* Notify the user of a 404 Not Found response */
-      return alert("Error: Could Not Find Resource");
-    }
-    if (evt.detail.successful != true) {
-      /* Notify of an unexpected error, & print error to console */
-      alert("Unexpected Error");
-      return console.error(evt);
-    }
-    if (evt.detail.target.id == 'list_emoji') {
-      if (evt.detail.successful == true) {
-        form_emoji_create.reset()
-        emoji_modal.close()
-        emoji_modal_delete.close()
-      }
-    }
-  });
-
-})()
 
 

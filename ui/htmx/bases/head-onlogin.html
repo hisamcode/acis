@@ -1,0 +1,14 @@
+{{define "head"}}
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ template "title" . }}</title>
+  <script src="/static/js/htmx.min.js"></script>
+  <script src="/static/js/response-targets.js" defer></script>
+  <script src="/static/js/main.js"></script>
+  <script src="/static/js/onlogin.js"></script>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="stylesheet" href="/static/css/htmx.css">
+</head>
+{{end}}

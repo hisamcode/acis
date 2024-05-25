@@ -13,6 +13,7 @@ type templateData struct {
 	CSRFToken     string
 	Projects      []data.Project
 	Project       data.Project
+	Transactions  []data.Transaction
 }
 
 func (app *application) newTemplateData(r *http.Request) templateData {

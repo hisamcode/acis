@@ -2,22 +2,17 @@
 
 {{define "main"}}
 <div class="relative mb-16">
-  <!-- <div class="fixed right-2 md:right-1/4 bottom-4 z-10 ">
-    <a href="/transaction/create" hx-get="/transaction/create" hx-push-url="true" hx-target="body"
-      class="btn btn-lg btn-circle btn-active btn-primary">
-      +
-      <span class="loading loading-spinner htmx-indicator absolute"></span>
-    </a>
-  </div> -->
 
-  <div role="tablist" class="tabs tabs-bordered my-6 sticky top-0">
-    <a role="tab" class="tab">Year</a>
-    <a role="tab" class="tab tab-active">Month</a>
-    <a role="tab" class="tab">Day</a>
+  <div role="tablist" id="tab_dates" class="tabs tabs-bordered my-6 sticky top-0" hx-boost="true"
+    hx-target="#list_transactions">
+    <a id="tab_yearly" role="tab" class="tab" onclick="tabbed(this)">Yearly</a>
+    <a id="tab_monthly" role="tab" class="tab tab-active" onclick="tabbed(this)">Monthly</a>
+    <a id="tab_daily" role="tab" class="tab" onclick="tabbed(this)">
+      Daily
+    </a>
   </div>
 
   <div class="grid justify-items-center grid-cols-1 md:grid-cols-2 gap-2">
-    <!-- <div class="flex"> -->
     <div class="stats">
       <div class="stat ">
         <div class="stat-title">Out this April</div>
@@ -54,122 +49,79 @@
     </div>
   </div>
 
-  <div class="overflow-x-auto container mt-2">
-    <table class="table ">
-      <!-- head -->
-      <thead>
-        <tr>
-          <th></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="hover cursor-pointer">
-          <td>
-            <div class="flex justify-center items-center gap-3">
-              <div class="w-12 h-12 text-3xl">
-                🍉
-              </div>
-              <div>
-                <div class="font-bold">Food</div>
-                <div class="text-sm opacity-50">02:AM</div>
-              </div>
-            </div>
-          </td>
-          <td>RP -5.000</td>
-        </tr>
-        <tr class="hover">
-          <td>
-            <div class="flex justify-center items-center gap-3">
-              <div class="w-12 h-12 text-3xl">
-                🍉
-              </div>
-              <div>
-                <div class="font-bold">Food</div>
-                <div class="text-sm opacity-50">02:AM</div>
-              </div>
-            </div>
-          </td>
-          <td>RP -5.000</td>
-        </tr>
-        <tr class="hover">
-          <td>
-            <div class="flex justify-center items-center gap-3">
-              <div class="w-12 h-12 text-3xl">
-                🍉
-              </div>
-              <div>
-                <div class="font-bold">Food</div>
-                <div class="text-sm opacity-50">02:AM</div>
-              </div>
-            </div>
-          </td>
-          <td>RP -5.000</td>
-        </tr>
-        <tr class="hover">
-          <td>
-            <div class="flex justify-center items-center gap-3">
-              <div class="w-12 h-12 text-3xl">
-                🍉
-              </div>
-              <div>
-                <div class="font-bold">Food</div>
-                <div class="text-sm opacity-50">02:AM</div>
-              </div>
-            </div>
-          </td>
-          <td>RP -5.000</td>
-        </tr>
-        <tr class="hover">
-          <td>
-            <div class="flex justify-center items-center gap-3">
-              <div class="w-12 h-12 text-3xl">
-                🍉
-              </div>
-              <div>
-                <div class="font-bold">Food</div>
-                <div class="text-sm opacity-50">02:AM</div>
-              </div>
-            </div>
-          </td>
-          <td>RP -5.000</td>
-        </tr>
-        <tr class="hover">
-          <td>
-            <div class="flex justify-center items-center gap-3">
-              <div class="w-12 h-12 text-3xl">
-                🍉
-              </div>
-              <div>
-                <div class="font-bold">Food</div>
-                <div class="text-sm opacity-50">02:AM</div>
-              </div>
-            </div>
-          </td>
-          <td>RP -5.000</td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- section list transaction -->
+  <div class=" overflow-x-auto container mt-2" id="list_transactions" hx-trigger="list-transactions from:body">
   </div>
+
 </div>
 
-<div class="btm-nav hidden max-md:flex">
-  <button>
-    <svg class="w-6 h-6 " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-      viewBox="0 0 24 24">
-      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M21 13v-2a1 1 0 0 0-1-1h-.757l-.707-1.707.535-.536a1 1 0 0 0 0-1.414l-1.414-1.414a1 1 0 0 0-1.414 0l-.536.535L14 4.757V4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v.757l-1.707.707-.536-.535a1 1 0 0 0-1.414 0L4.929 6.343a1 1 0 0 0 0 1.414l.536.536L4.757 10H4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h.757l.707 1.707-.535.536a1 1 0 0 0 0 1.414l1.414 1.414a1 1 0 0 0 1.414 0l.536-.535 1.707.707V20a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-.757l1.707-.708.536.536a1 1 0 0 0 1.414 0l1.414-1.414a1 1 0 0 0 0-1.414l-.535-.536.707-1.707H20a1 1 0 0 0 1-1Z" />
-      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-    </svg>
-    <span class="btm-nav-label text-sm">Setting</span>
-  </button>
-  <button>
-    <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-      viewBox="0 0 24 24">
-      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5" />
-    </svg>
-    <span class="btm-nav-label text-sm">Create</span>
-  </button>
-</div>
+
+<script>
+  function tabbed(el) {
+    setAttributeClientDate(el)
+    setAttributeClientDate(list_transactions)
+    for (tab of tab_dates.children) {
+      tab.classList.remove("tab-active")
+    }
+    el.classList.add("tab-active")
+
+    let tabbedID = getTabbedID()
+
+    form_create_transaction.setAttribute("hx-target", "#list_transactions")
+    form_create_transaction.setAttribute("hx-headers", `{"tab": "${tabbedID}"}`)
+    htmx.process(form_create_transaction)
+
+    if (tabbedID === "tab_daily") {
+      list_transactions.setAttribute("hx-get", "/projects/{{.Project.ID}}/daily")
+    }
+    if (tabbedID === "tab_monthly") {
+      list_transactions.setAttribute("hx-get", "/projects/{{.Project.ID}}/monthly")
+    }
+    if (tabbedID === "tab_yearly") {
+      list_transactions.setAttribute("hx-get", "/projects/{{.Project.ID}}/yearly")
+    }
+    htmx.process(list_transactions)
+
+    let evt = new CustomEvent("list-transactions")
+    document.body.dispatchEvent(evt)
+  }
+
+  function getTabbedID() {
+    let el = document.querySelector("#tab_dates > a.tab-active")
+    return el.id
+  }
+
+  (function () {
+    let startInterval = 0
+    const interval = setInterval(function () {
+      if (startInterval == 10) {
+        clearInterval(interval)
+        alert("Client error")
+      }
+      if (list_transactions.hasAttribute("hx-headers")) {
+        tab_daily.click()
+        clearInterval(interval)
+      }
+      startInterval++
+    }, 100)
+  })()
+
+
+  htmx.onLoad(function (content) {
+    // console.log("on load ok")
+    // if (typeof (list_transactions) != 'undefined') {
+    // setAttributeClientDate(list_transactions)
+    // }
+
+    // bottom nav links
+    // var btmNavLinks = document.querySelectorAll("#btm-nav a")
+    // for (var i = 0; i < btmNavLinks.length; i++) {
+    //   var link = btmNavLinks[i]
+    //   if (link.getAttribute('href') == window.location.pathname) {
+    //     link.classList.add("active", "text-primary")
+    //     break
+    //   }
+    // }
+  });
+</script>
 {{end}}

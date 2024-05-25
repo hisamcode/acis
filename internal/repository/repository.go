@@ -28,4 +28,5 @@ type ProjectDatabaseRepoer interface {
 
 type TransactionDatabaseRepoer interface {
 	Insert(transaction *data.Transaction) error
+	LatestBetweenDate(projectID data.Project, date1, date2 time.Time, limit int, lastDisplayedID int64) ([]data.Transaction, error)
 }

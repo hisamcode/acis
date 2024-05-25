@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hisamcode/acis/internal/data"
+	"github.com/hisamcode/acis/internal/helper"
 	"github.com/hisamcode/acis/internal/validator"
 )
 
@@ -71,7 +72,6 @@ func (app *application) project(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) projectTransactionPost(w http.ResponseWriter, r *http.Request) {
-
 	// validation
 	form := transactionForm{}
 	err := app.decodePostForm(r, &form)
@@ -125,7 +125,63 @@ func (app *application) projectTransactionPost(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/projects/%d/home", project.ID), http.StatusSeeOther)
+	app.addHXTrigger(w, "list-transactions, close-modal-create-transaction")
+	w.WriteHeader(http.StatusNoContent)
+
+}
+
+func (app *application) latestTransactionDaily(w http.ResponseWriter, r *http.Request) {
+	date, err := app.getHeaderClientDate(r)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	project, err := app.getProject(r)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	date1 := helper.StartOfDay(date)
+	date2 := helper.EndOfDay(date)
+
+	transactions, err := app.DB.Transaction.LatestBetweenDate(*project, date1, date2, 10, 0)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Transactions = transactions
+	app.render(w, http.StatusOK, LayoutPartials, "daily.html", data)
+}
+
+func (app *application) latestTransactionMonthly(w http.ResponseWriter, r *http.Request) {
+	date, err := app.getHeaderClientDate(r)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	project, err := app.getProject(r)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	date1 := helper.StartOfDay(date)
+	date2 := helper.EndOfDay(date)
+
+	transactions, err := app.DB.Transaction.LatestBetweenDate(*project, date1, date2, 10, 0)
+	if err != nil {
+		app.renderServerError(w, err)
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Transactions = transactions
+	app.render(w, http.StatusOK, LayoutPartials, "daily.html", data)
 }
 
 type emojiForm struct {

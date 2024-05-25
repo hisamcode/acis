@@ -16,6 +16,20 @@ import (
 	"go.uber.org/zap"
 )
 
+func (app *application) getHeaderClientDate(r *http.Request) (time.Time, error) {
+	clientDate := r.Header.Get("client-date")
+	if clientDate == "" {
+		clientDate = time.Now().String()
+	}
+
+	date, err := time.Parse(time.RFC3339, clientDate)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return date, nil
+}
+
 func (app *application) getProject(r *http.Request) (*data.Project, error) {
 	projectID, err := strconv.ParseInt(r.PathValue("projectID"), 10, 64)
 	if err != nil {
@@ -198,7 +212,8 @@ func newTemplateCache() (templateCache, error) {
 
 func humanDate(t time.Time) string {
 	// return t.Format("02 JAN 2006 at 15:04")
-	return t.Format(time.RFC822)
+	// 2006-01-02 15:04:
+	return t.Format("2006-01-02 15:04")
 }
 
 var functions = template.FuncMap{
@@ -298,7 +313,7 @@ func newTemplateCacheProject() (map[string]*template.Template, error) {
 
 		patterns := []string{
 			"./ui/htmx/bases/project.html",
-			"./ui/htmx/bases/head.html",
+			"./ui/htmx/bases/head-onlogin.html",
 			page,
 		}
 

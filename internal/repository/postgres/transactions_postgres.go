@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/hisamcode/acis/internal/data"
 )
@@ -37,4 +38,80 @@ func (m TransactionModel) Insert(transaction *data.Transaction) error {
 	}
 
 	return nil
+}
+
+func (m TransactionModel) LatestBetweenDate(project data.Project, date1, date2 time.Time, limit int, lastDisplayedID int64) ([]data.Transaction, error) {
+	var query string
+	var args []any
+
+	if lastDisplayedID < 1 {
+		query = `
+		SELECT 
+			created_at, nominal, detail, emoji_id, wts_id, project_id 
+		FROM transactions
+		WHERE
+			project_id = $1
+			AND created_at >= $2 
+			AND created_at < $3
+		ORDER BY created_at DESC
+		LIMIT $4
+		`
+		args = []any{project.ID, date1, date2, limit}
+	} else {
+		query = `
+		SELECT 
+			created_at, nominal, detail, emoji_id, wts_id, project_id 
+		FROM transactions
+		WHERE
+			project_id = $1
+			AND created_at >= $2 
+			AND created_at < $3
+			AND id < $4
+		ORDER BY created_at DESC
+		LIMIT $5
+		`
+		args = []any{project.ID, date1, date2, lastDisplayedID, limit}
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions := []data.Transaction{}
+
+	for rows.Next() {
+		transaction := data.Transaction{}
+
+		err := rows.Scan(
+			&transaction.CreatedAt,
+			&transaction.Nominal,
+			&transaction.Detail,
+			&transaction.Emoji.ID,
+			&transaction.WTSID,
+			&transaction.ProjectID,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		emoji, err := project.FindEmoji(transaction.Emoji.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		transaction.Emoji = emoji
+		transactions = append(transactions, transaction)
+	}
+
+	// error during iteration
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return transactions, nil
 }

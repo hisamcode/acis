@@ -35,6 +35,8 @@ func (app *application) routes() *http.ServeMux {
 	mux.Handle("GET /projects/latest", protected.ThenFunc(app.latestProjects))
 
 	mux.Handle("GET /projects/{projectID}/home", protected.ThenFunc(app.project))
+	mux.Handle("GET /projects/{projectID}/daily", protected.ThenFunc(app.latestTransactionDaily))
+	mux.Handle("GET /projects/{projectID}/monthly", protected.ThenFunc(app.latestTransactionMonthly))
 	mux.Handle("GET /projects/{projectID}/settings", protected.ThenFunc(app.projectSetting))
 	mux.Handle("POST /projects/{projectID}/transaction", protected.ThenFunc(app.projectTransactionPost))
 	mux.Handle("PUT /projects/{projectID}", protected.ThenFunc(app.projectSettingPut))

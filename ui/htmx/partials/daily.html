@@ -1,0 +1,29 @@
+{{define "partials"}}
+<table class="table ">
+  <!-- head -->
+  <thead>
+    <tr>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Transactions}}
+    <tr class="hover cursor-pointer">
+      <td>
+        <div class="flex justify-center items-center gap-3">
+          <div class="w-12 h-12 text-3xl">
+            {{.Emoji.Emoji}}
+          </div>
+          <div>
+            <div class="font-bold">{{.Emoji.Name}}</div>
+            <div class="text-sm opacity-50">{{humanDate .CreatedAt}}</div>
+          </div>
+        </div>
+      </td>
+      <td>{{.Nominal}}</td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}

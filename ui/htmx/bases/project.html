@@ -117,7 +117,7 @@
       </form>
       <h3 class="font-bold text-lg">Create Transaction</h3>
       <form method="POST" id="form_create_transaction" hx-post="/projects/{{.Project.ID}}/transaction" hx-target="body"
-        hx-target-422="#form_create_transaction" hx-push-url="true" onsubmit="onSubmit()">
+        hx-target-422="#form_create_transaction" onsubmit="onSubmit()">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <div class="py-4">
           <div class="mt-2">
@@ -225,6 +225,10 @@
 
 </body>
 <script>
+  document.addEventListener("close-modal-create-transaction", function (evt) {
+    create_transaction.close()
+  })
+
   function toLocalISOString(date) {
     const localDate = new Date(date - date.getTimezoneOffset() * 60000); //offset in milliseconds. Credit https://stackoverflow.com/questions/10830357/javascript-toisostring-ignores-timezone-offset
 
@@ -234,10 +238,13 @@
     return localDate.toISOString()
   }
 
-  (function () {
+  function setTimeNowOnDateInput() {
     transaction_create_created_at_picker.value = toLocalISOString(new Date()).slice(0, -1);
     transaction_create_created_at.value = toLocalISOString(new Date())
+  }
 
+  (function () {
+    setTimeNowOnDateInput()
 
     var btmNavLinks = document.querySelectorAll("#btm-nav a")
     for (var i = 0; i < btmNavLinks.length; i++) {
@@ -250,9 +257,10 @@
   })()
 
   function showModalCreateTransaction() {
+    create_transaction.showModal()
+    setTimeNowOnDateInput()
     create_transaction_nominal.value = null
     window.setTimeout(() => create_transaction_nominal.focus(), 0)
-    create_transaction.showModal()
   }
 
   function chooseEmoji(elm) {
